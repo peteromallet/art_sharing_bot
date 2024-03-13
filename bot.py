@@ -63,24 +63,29 @@ async def download_file(url, filename):
                     f.write(await resp.read())
 
 async def update_user_details(username, display_name=None, block=None):
-    file_path = 'user_details.csv'
-    if os.path.exists(file_path):
-        df = pd.read_csv(file_path)
-    else:
-        df = pd.DataFrame(columns=['name', 'display_name', 'block'])
+  file_path = 'user_details.csv'
+  if os.path.exists(file_path):
+    df = pd.read_csv(file_path)
+  else:
+    df = pd.DataFrame(columns=['name', 'display_name', 'block'])
 
-    if username in df['name'].values:
-        # Update existing row
-        if display_name is not None:
-            df.loc[df['name'] == username, 'display_name'] = display_name
-        if block is not None:
-            df.loc[df['name'] == username, 'block'] = block
-    else:
-        # Append new row
-        new_row = {'name': username, 'display_name': display_name if display_name else '', 'block': block if block is not None else False}
-        df = df.append(new_row, ignore_index=True)
-    
-    df.to_csv(file_path, index=False)
+  if username in df['name'].values:
+    # Update existing row
+    if display_name is not None:
+      df.loc[df['name'] == username, 'display_name'] = display_name
+    if block is not None:
+      df.loc[df['name'] == username, 'block'] = block
+  else:
+    # Append new row using pd.concat
+    new_row = pd.DataFrame([{
+        'name': username,
+        'display_name': display_name if display_name else '',
+        'block': block if block is not None else False
+    }])
+    df = pd.concat([df, new_row], ignore_index=True)
+
+  df.to_csv(file_path, index=False)
+
 
 @client.event
 async def on_message(message):
@@ -104,9 +109,10 @@ async def on_message(message):
             await message.channel.send("You have been unblocked.")
 
         # Update display name if the message is not a block/unblock command
-        else:
+        else:            
+            message.content = message.content.strip()
             await update_user_details(username, display_name=message.content)
-            await message.channel.send("Your details have been updated.")
+            await message.channel.send(f"Your name has been updated to '{message.content}'.")
 
 @client.event
 async def on_ready():
