@@ -62,6 +62,52 @@ async def download_file(url, filename):
                 with open(filename, 'wb') as f:
                     f.write(await resp.read())
 
+async def update_user_details(username, display_name=None, block=None):
+    file_path = 'user_details.csv'
+    if os.path.exists(file_path):
+        df = pd.read_csv(file_path)
+    else:
+        df = pd.DataFrame(columns=['name', 'display_name', 'block'])
+
+    if username in df['name'].values:
+        # Update existing row
+        if display_name is not None:
+            df.loc[df['name'] == username, 'display_name'] = display_name
+        if block is not None:
+            df.loc[df['name'] == username, 'block'] = block
+    else:
+        # Append new row
+        new_row = {'name': username, 'display_name': display_name if display_name else '', 'block': block if block is not None else False}
+        df = df.append(new_row, ignore_index=True)
+    
+    df.to_csv(file_path, index=False)
+
+@client.event
+async def on_message(message):
+    # Ignore messages from the bot itself
+    if message.author == client.user:
+        return
+
+    # Check if the message is a DM
+    if isinstance(message.channel, discord.DMChannel):
+        username = str(message.author)
+        content = message.content.strip().lower()
+
+        # Check if the message is to block the user
+        if content == "block":
+            await update_user_details(username, block=True)
+            await message.channel.send("You have been blocked.")
+
+        # Check if the message is to unblock the user
+        elif content == "unblock":
+            await update_user_details(username, block=False)
+            await message.channel.send("You have been unblocked.")
+
+        # Update display name if the message is not a block/unblock command
+        else:
+            await update_user_details(username, display_name=message.content)
+            await message.channel.send("Your details have been updated.")
+
 @client.event
 async def on_ready():
     print(f'Logged in as {client.user}')
@@ -109,7 +155,7 @@ async def on_raw_reaction_add(payload):
                             author_display_name = query_result['display_name'].values[0] if 'display_name' in query_result and query_result['display_name'].values[0] else author_name
                             await post_tweet_with_media(f"Created by {author_display_name}:", file_path)
                         else:
-                            await post_tweet_with_media(f"Created by {author_name}", file_path)
+                            await post_tweet_with_media(f"Created by {author_name}:", file_path)
                 else:
                     print(f"Message contains #nt: {message.content}")
                                 
