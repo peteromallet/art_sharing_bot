@@ -1,3 +1,4 @@
 .env
 __pycache__
-tob.py
+database.db
+admin.py
