@@ -1,7 +1,7 @@
 import discord
 import re
 from datetime import datetime, timedelta, timezone
-from classes import MessageWithReactionCount
+from classes import MessageWithReactionCount, User
 
 
 async def get_channel_messages_past_24_hours(channel: discord.TextChannel) -> list[discord.Message]:
@@ -66,3 +66,9 @@ async def get_messages_with_attachments_and_reactions(messages: list[discord.Mes
                     message=message, unique_reactions_count=unique_reactors_count))
 
     return valid_messages_with_reaction_count
+
+
+# can't put this inside User class, cz database is mapped one-way (class -> table), not (table -> class), so it won't work, docs are trash
+def convert_user_to_markdown(user: User) -> str:
+
+    return f"**Name:** {user.name}\n**Youtube:** {user.youtube_username}\n**Twitter:** {user.twitter_username}\n**Instagram:** {user.instagram_username}\n**Website:** {user.website_url}\n**Okay To Feature:** {user.featured}"

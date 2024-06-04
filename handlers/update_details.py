@@ -1,6 +1,7 @@
 import discord
 from classes import User
 from services.database import insert_user, get_session, get_user, update_user
+from utils import convert_user_to_markdown
 
 
 async def handle_update_details(interaction: discord.Interaction, new_user: User):
@@ -15,10 +16,11 @@ async def handle_update_details(interaction: discord.Interaction, new_user: User
         # set featured to true by default, if not provided
         if new_user.featured == None:
             new_user.set_attribute("featured", True)
+
         insert_user(db_session, new_user)
     else:
         # update changed attributes only
-        # TODO: refactor this dumb logic
+        # TODO: refactor this dumb ORM logic
         new_user_attributes = list(new_user.__dict__.keys())
         for attribute in new_user_attributes:
             new_attribute_value = getattr(new_user, attribute, None)
@@ -33,4 +35,4 @@ async def handle_update_details(interaction: discord.Interaction, new_user: User
     new_user_details = get_user(db_session, interaction.user.id)
     db_session.close()
 
-    await interaction.response.send_message(f"## Your details have been updated as follows:\n\n**Name:** {new_user_details.name}\n**Youtube:** {new_user_details.youtube_username}\n**Twitter:** {new_user_details.twitter_username}\n**Instagram:** {new_user_details.instagram_username}\n**Website:** {new_user_details.website_url}\n**Okay To Feature:** {new_user_details.featured}", ephemeral=True)
+    await interaction.response.send_message(f"## Your details have been updated as follows:\n{convert_user_to_markdown(new_user_details)}", ephemeral=True)
