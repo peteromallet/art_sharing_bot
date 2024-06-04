@@ -31,17 +31,18 @@ def get_session():
     return session
 
 
-def insert_user(session, user: User):
+def insert_user(session: Session, user: User):
     session.add(user)
     session.commit()
 
 
-def get_user(session, user_id):
+def get_user(session: Session, user_id: int):
     result = session.query(user_table).filter_by(id=user_id).first()
     return result
 
 
 def update_user(session: Session, user: User):
+    # TODO: find a better way to do this
     user_dict = user.__dict__
     del user_dict['_sa_instance_state']
     session.query(user_table).filter_by(id=user.id).update(user_dict)
