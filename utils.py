@@ -71,4 +71,4 @@ async def get_messages_with_attachments_and_reactions(messages: list[discord.Mes
 # can't put this inside User class, cz database is mapped one-way (class -> table), not (table -> class), so it won't work, docs are trash
 def convert_user_to_markdown(user: User) -> str:
 
-    return f"**Name:** {user.name}\n**Youtube:** {user.youtube_username or ''}\n**Twitter:** {user.twitter_username or ''}\n**Instagram:** {user.instagram_username or ''}\n**Website:** {user.website_url or ''}\n**Okay To Feature:** {user.featured}"
+    return f"**Name:** {user.name}\n**Youtube:** {user.youtube or ''}\n**Twitter:** {user.twitter or ''}\n**Instagram:** {user.instagram or ''}\n**Website:** {user.website or ''}\n**Okay To Feature:** {user.featured}"

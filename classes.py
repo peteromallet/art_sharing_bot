@@ -8,13 +8,13 @@ class MessageWithReactionCount():
 
 
 class User():
-    def __init__(self, id: int, name: str, youtube_username: str, twitter_username: str, instagram_username: str, website_url: str, featured: bool):
+    def __init__(self, id: int, name: str, youtube: str, twitter: str, instagram: str, website: str, featured: bool):
         self.id = id
         self.name = name
-        self.youtube_username = youtube_username
-        self.twitter_username = twitter_username
-        self.instagram_username = instagram_username
-        self.website_url = website_url
+        self.youtube = youtube
+        self.twitter = twitter
+        self.instagram = instagram
+        self.website = website
         self.featured = featured
 
     # for overriding atributes

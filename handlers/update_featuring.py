@@ -26,7 +26,7 @@ def handle_update_featuring(interaction: discord.Interaction, okay_to_feature: b
     else:
         # TODO: fix the shit mapper
         new_user_details = User(id=existing_user_details.id, name=existing_user_details.name,
-                                youtube_username=existing_user_details.youtube_username, website_url=existing_user_details.website_url,
-                                twitter_username=existing_user_details.twitter_username, instagram_username=existing_user_details.instagram_username, featured=okay_to_feature)
+                                youtube=existing_user_details.youtube, website=existing_user_details.website,
+                                twitter=existing_user_details.twitter, instagram=existing_user_details.instagram, featured=okay_to_feature)
         update_user(db_session, new_user_details)
         return True

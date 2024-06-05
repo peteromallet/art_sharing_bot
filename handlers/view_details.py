@@ -4,7 +4,7 @@ from services.database import get_session, get_user
 from utils import convert_user_to_markdown
 
 
-async def handle_view_details(interaction: discord.Interaction):
+async def handle_view_details_interaction(interaction: discord.Interaction):
     db_session = get_session()
     user_details: User = get_user(db_session, interaction.user.id)
     db_session.close()

@@ -11,10 +11,10 @@ metadata = MetaData()
 user_table = Table('users', metadata,
                    Column('id', Integer, primary_key=True, nullable=False),
                    Column('name', String),
-                   Column('youtube_username', String),
-                   Column('twitter_username', String),
-                   Column('instagram_username', String),
-                   Column('website_url', Text),
+                   Column('youtube', String),
+                   Column('twitter', String),
+                   Column('instagram', String),
+                   Column('website', Text),
                    Column('featured', Boolean))
 
 metadata.create_all(engine)
