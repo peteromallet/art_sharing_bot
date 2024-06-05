@@ -8,7 +8,7 @@ from classes import User, MessageWithReactionCount
 
 from handlers.view_details import handle_view_details_interaction
 from handlers.update_details import handle_update_details_interaction
-from handlers.notify_user import handle_notify_user_interaction
+from handlers.notify_user_dm import handle_notify_user_interaction
 from handlers.update_featuring import handle_update_featuring_interaction
 
 from services.database import get_session, get_user
@@ -21,7 +21,7 @@ load_dotenv()
 DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 ART_SHARING_CHANNEL = 1138865343314530324
 PROJECT_ART_SHARING_CHANNEL = 1244440385825275955
-GUILD = discord.Object(id=1076117621407223829)
+GUILD = discord.Object(id=1076117621407223829)  # banodoco
 
 intents = discord.Intents.default()
 intents.messages = True
@@ -44,7 +44,8 @@ async def on_ready():
     db_session = get_session()
     user_details: User = get_user(db_session, 688343645644259328)
 
-    await handle_notify_user_interaction(bot, valid_messages_with_attachments_and_reactions[0].message, user_details)
+    # TODO: check if user wants to be featured
+    await handle_notify_user_interaction(bot, valid_messages_with_attachments_and_reactions[2].message, user_details)
 
 
 @bot.tree.command(name="show_details", description="View your details for art sharing")
