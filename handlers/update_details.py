@@ -4,9 +4,18 @@ from services.database import insert_user, get_session, get_user, update_user
 from utils import convert_user_to_markdown
 
 
-async def handle_update_details(interaction: discord.Interaction, new_user: User):
+async def handle_update_details_interaction(interaction: discord.Interaction, new_user: User):
+    new_user_details = handle_update_details(
+        new_user=new_user, interaction=interaction)
+
+    await interaction.response.send_message(f"## Your details have been updated as follows:\n{convert_user_to_markdown(new_user_details)}", ephemeral=True)
+
+
+# creates or updates user details
+def handle_update_details(new_user: User, interaction: discord.Interaction) -> User:
     db_session = get_session()
-    existing_user_details: User = get_user(db_session, interaction.user.id)
+    existing_user_details: User = get_user(
+        session=db_session, user_id=interaction.user.id)
 
     if not existing_user_details:
         # set name to discord name by default, if not provided
@@ -32,7 +41,8 @@ async def handle_update_details(interaction: discord.Interaction, new_user: User
         update_user(db_session, new_user)
 
     # send updated details
-    new_user_details = get_user(db_session, interaction.user.id)
+    new_user_details = get_user(
+        session=db_session, user_id=interaction.user.id)
     db_session.close()
 
-    await interaction.response.send_message(f"## Your details have been updated as follows:\n{convert_user_to_markdown(new_user_details)}", ephemeral=True)
+    return new_user_details
