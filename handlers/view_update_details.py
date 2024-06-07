@@ -76,7 +76,7 @@ async def handle_view_update_details_interaction(interaction: discord.Interactio
         session=db_session, user_id=interaction.user.id)
 
     if not user_details:
-        user_details = User(id=interaction.user.id, name=interaction.user.name,
+        user_details = User(id=interaction.user.id, name=interaction.user.global_name,
                             youtube="", twitter="", instagram="", website="", featured=True)
 
     myView = MyView(user_details)

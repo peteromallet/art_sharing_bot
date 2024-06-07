@@ -13,7 +13,7 @@ def handle_update_details(new_user: User, interaction: discord.Interaction) -> U
     if not existing_user_details:
         # set name to discord name by default, if not provided
         if not new_user.name:
-            new_user.set_attribute("name", interaction.user.name)
+            new_user.set_attribute("name", interaction.user.global_name)
 
         # set featured to true by default, if not provided
         if new_user.featured == None:

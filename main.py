@@ -83,16 +83,16 @@ async def on_ready():
     # await channel.send("execution continues on_ready..")
     # Run the scheduled task
 
-    art_sharing_channel = bot.get_channel(ART_SHARING_CHANNEL)
-    messages = await get_channel_messages_past_24_hours(art_sharing_channel)
-    valid_messages_with_attachments_and_reactions: list[MessageWithReactionCount] = await get_messages_with_attachments_and_reactions(messages)
+    # art_sharing_channel = bot.get_channel(ART_SHARING_CHANNEL)
+    # messages = await get_channel_messages_past_24_hours(art_sharing_channel)
+    # valid_messages_with_attachments_and_reactions: list[MessageWithReactionCount] = await get_messages_with_attachments_and_reactions(messages)
 
-    db_session = get_session()
-    user_details: User = get_user(db_session, 301463647895683072)
-    # user_details: User = get_user(db_session, 688343645644259328)
+    # db_session = get_session()
+    # user_details: User = get_user(db_session, 301463647895683072)
+    # # user_details: User = get_user(db_session, 688343645644259328)
 
-    # TODO: check if user wants to be featured
-    await handle_notify_user_interaction(bot, valid_messages_with_attachments_and_reactions[0].message, user_details)
+    # # TODO: check if user wants to be featured
+    # await handle_notify_user_interaction(bot, valid_messages_with_attachments_and_reactions[0].message, user_details)
 
 
 @bot.tree.command(name="art_sharing_details", description="View and update your art sharing details")
