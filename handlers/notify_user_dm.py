@@ -9,6 +9,7 @@ from handlers.update_details import handle_update_details
 # send dm to user
 # Edit comment button - opens a modal for editing comment
 # Edit personal details - opens a modal for editing personal details
+# Edit featuring - dynamic button for changing featuring
 
 
 class DataSharer():
@@ -19,34 +20,34 @@ class DataSharer():
         self.user_details = user_details
 
 
+def format_msg(dataSharer: DataSharer) -> str:
+    msg = f"## Your art may be featured on Banodoco's social channels today: {dataSharer.jump_url}\n\nYour current details are as follows:\n\n{convert_user_to_markdown(dataSharer.user_details)}\n**Comment:** {dataSharer.comment}\n\n_Please click the buttons below if you'd like to update your details or not be featured_"
+    return msg
+
+
 class UpdateCommentModal(discord.ui.Modal, title='Update comment'):
     commentInput = discord.ui.TextInput(
-        label='Comment', default="", style=discord.TextStyle.paragraph)
+        label='Comment', style=discord.TextStyle.paragraph)
 
     def __init__(self, dataSharer: DataSharer):
         super().__init__()
         self.dataSharer = dataSharer
 
-        # use txt files to track whether the post comment has been edited
-        # set updated comment
+        # set updated comment, if any
         if os.path.exists(self.dataSharer.file_save_path):
             with open(self.dataSharer.file_save_path, 'r') as file:
                 edited_comment = file.read()
+                self.dataSharer.comment = edited_comment
                 self.commentInput.default = edited_comment
-        else:
-            # set original comment
-            self.commentInput.default = self.dataSharer.comment
 
     async def on_submit(self, interaction: discord.Interaction):
         # update txt file with new comment
         with open(self.dataSharer.file_save_path, 'w') as file:
             file.write(self.commentInput.value)
 
-        msg = f"## Your art may be featured on Banodoco's social channels today: {self.dataSharer.jump_url}\n\nYour current details are as follows:\n\n{convert_user_to_markdown(self.dataSharer.user_details)}\n**Comment:** {self.commentInput.value}\n\n_To stop yourself from being featured, use the `/update_featuring` command._"
-
+        self.dataSharer.comment = self.commentInput.value
         myView = MyView(dataSharer=self.dataSharer)
-
-        await interaction.response.edit_message(content=msg, view=myView)
+        await interaction.response.edit_message(content=format_msg(self.dataSharer), view=myView)
 
 
 class UpdateDetailsModal(discord.ui.Modal, title='Update personal details'):
@@ -74,11 +75,14 @@ class UpdateDetailsModal(discord.ui.Modal, title='Update personal details'):
             new_user, interaction)
         self.dataSharer.user_details = new_user_details
 
-        msg = f"## Your art may be featured on Banodoco's social channels today: {self.dataSharer.jump_url}\n\nYour current details are as follows:\n\n{convert_user_to_markdown(self.dataSharer.user_details)}\n**Comment:** {self.dataSharer.comment}\n\n_To stop yourself from being featured, use the `/update_featuring` command._"
+        # set updated comment, if any
+        if os.path.exists(self.dataSharer.file_save_path):
+            with open(self.dataSharer.file_save_path, 'r') as file:
+                edited_comment = file.read()
+                self.dataSharer.comment = edited_comment
 
         myView = MyView(dataSharer=self.dataSharer)
-
-        await interaction.response.edit_message(content=msg, view=myView)
+        await interaction.response.edit_message(content=format_msg(self.dataSharer), view=myView)
 
 
 class MyView(discord.ui.View):
@@ -86,8 +90,11 @@ class MyView(discord.ui.View):
         super().__init__()
         self.timeout = None
         self.dataSharer = dataSharer
+        self.user_details = self.dataSharer.user_details
+        self.children[2].label = "Stop being featured" if self.dataSharer.user_details.featured else "Allow to be featured"
+        self.children[2].style = discord.ButtonStyle.red if self.dataSharer.user_details.featured else discord.ButtonStyle.green
 
-    @discord.ui.button(label="Edit Comment", style=discord.ButtonStyle.green)
+    @discord.ui.button(label="Edit Comment", style=discord.ButtonStyle.grey)
     async def open_comment_modal(self, interaction: discord.Interaction, _):
         updateCommentModal = UpdateCommentModal(self.dataSharer)
         await interaction.response.send_modal(updateCommentModal)
@@ -97,6 +104,24 @@ class MyView(discord.ui.View):
         updateDetailsModal = UpdateDetailsModal(self.dataSharer)
         await interaction.response.send_modal(updateDetailsModal)
 
+    @discord.ui.button()
+    async def edit_featuring(self, interaction: discord.Interaction, _):
+        new_user = User(id=self.dataSharer.user_details.id, name=self.user_details.name, twitter=self.user_details.twitter,
+                        instagram=self.user_details.instagram, youtube=self.user_details.youtube, website=self.user_details.website, featured=not self.dataSharer.user_details.featured)
+        # update database with new details
+        new_user_details = handle_update_details(
+            new_user, interaction)
+        self.dataSharer.user_details = new_user_details
+
+        # set updated comment, if any
+        if os.path.exists(self.dataSharer.file_save_path):
+            with open(self.dataSharer.file_save_path, 'r') as file:
+                edited_comment = file.read()
+                self.dataSharer.comment = edited_comment
+
+        myView = MyView(dataSharer=self.dataSharer)
+        await interaction.response.edit_message(content=format_msg(self.dataSharer), view=myView)
+
 
 async def handle_notify_user_interaction(bot: commands.Bot, message: discord.Message, user_details: User):
     original_comment = message.content or ''
@@ -105,10 +130,8 @@ async def handle_notify_user_interaction(bot: commands.Bot, message: discord.Mes
     file_save_path = os.path.join(tmp_dir, f"{message.id}.txt")
 
     user = await bot.fetch_user(user_details.id)  # TODO: use author.send
-    msg = f"## Your art may be featured on Banodoco's social channels today: {message.jump_url}\n\nYour current details are as follows:\n\n{convert_user_to_markdown(user_details)}\n**Comment:** {message.content or ''}\n\n_To stop yourself from being featured, use the `/update_featuring` command._"
 
     dataSharer = DataSharer(comment=original_comment, file_save_path=file_save_path,
                             jump_url=message.jump_url, user_details=user_details)
     myView = MyView(dataSharer)
-
-    await user.send(msg, view=myView)
+    await user.send(format_msg(dataSharer), view=myView)
