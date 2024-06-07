@@ -1,17 +1,10 @@
 import discord
 from classes import User
 from services.database import insert_user, get_session, get_user, update_user
-from utils import convert_user_to_markdown
-
-
-async def handle_update_details_interaction(interaction: discord.Interaction, new_user: User):
-    new_user_details = handle_update_details(
-        new_user=new_user, interaction=interaction)
-
-    await interaction.response.send_message(f"## Your details have been updated as follows:\n{convert_user_to_markdown(new_user_details)}", ephemeral=True)
-
 
 # creates or updates user details
+
+
 def handle_update_details(new_user: User, interaction: discord.Interaction) -> User:
     db_session = get_session()
     existing_user_details: User = get_user(

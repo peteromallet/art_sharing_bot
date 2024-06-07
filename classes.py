@@ -8,7 +8,7 @@ class MessageWithReactionCount():
 
 
 class User():
-    def __init__(self, id: int, name: str, youtube: str, twitter: str, instagram: str, website: str, featured: bool):
+    def __init__(self, id: int, name: str, youtube: str = "", twitter: str = "", instagram: str = "", website: str = "", featured: bool = True):
         self.id = id
         self.name = name
         self.youtube = youtube

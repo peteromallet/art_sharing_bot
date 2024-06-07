@@ -21,7 +21,11 @@ class DataSharer():
 
 
 def format_msg(dataSharer: DataSharer) -> str:
-    msg = f"## Your art may be featured on Banodoco's social channels today: {dataSharer.jump_url}\n\nYour current details are as follows:\n\n{convert_user_to_markdown(dataSharer.user_details)}\n**Comment:** {dataSharer.comment}\n\n_Please click the buttons below if you'd like to update your details or not be featured_"
+    if dataSharer.user_details.featured:
+        msg = f"## Your art may be featured on Banodoco's social channels today: {dataSharer.jump_url}\n\nYour current details are as follows:\n\n{convert_user_to_markdown(dataSharer.user_details)}\n**Comment:** {dataSharer.comment}\n\n_Please click the buttons below if you'd like to update your details or not be featured_"
+    else:
+        msg = f"## Your art may be featured on Banodoco's social channels today: {dataSharer.jump_url}\n\nYour current details are as follows:\n\n{convert_user_to_markdown(dataSharer.user_details)}\n**Comment:** {dataSharer.comment}\n\n_Please click the buttons below if you'd like to update your details or be featured again_"
+
     return msg
 
 
@@ -39,6 +43,8 @@ class UpdateCommentModal(discord.ui.Modal, title='Update comment'):
                 edited_comment = file.read()
                 self.dataSharer.comment = edited_comment
                 self.commentInput.default = edited_comment
+        else:
+            self.commentInput.default = self.dataSharer.comment
 
     async def on_submit(self, interaction: discord.Interaction):
         # update txt file with new comment
@@ -129,9 +135,9 @@ async def handle_notify_user_interaction(bot: commands.Bot, message: discord.Mes
     os.makedirs(tmp_dir, exist_ok=True)
     file_save_path = os.path.join(tmp_dir, f"{message.id}.txt")
 
-    user = await bot.fetch_user(user_details.id)  # TODO: use author.send
-
     dataSharer = DataSharer(comment=original_comment, file_save_path=file_save_path,
                             jump_url=message.jump_url, user_details=user_details)
     myView = MyView(dataSharer)
+
+    user = await bot.fetch_user(user_details.id)  # TODO: use author.send
     await user.send(format_msg(dataSharer), view=myView)
