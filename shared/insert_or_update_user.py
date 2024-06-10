@@ -16,11 +16,11 @@ async def handle_update_details(new_user: User, interaction: discord.Interaction
         if new_user.featured == None:
             new_user.featured = True
 
-        await db_session.add(new_user)
+        db_session.add(new_user)
     else:
         # update changed attributes only
         new_user_attributes = list(
-            filter(lambda x: not x.startswith('_'), new_user.__dict__.keys()))
+            filter(lambda x: not x.startswith('_') and x != 'created_at', new_user.__dict__.keys()))
         for attribute in new_user_attributes:
             new_attribute_value = getattr(new_user, attribute, None)
             if new_attribute_value != existing_user_details.__dict__.get(attribute):

@@ -1,28 +1,21 @@
-import datetime
 from typing import Optional
-
+from datetime import datetime
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import func
-from sqlalchemy.ext.asyncio import AsyncAttrs
-from sqlalchemy.orm import DeclarativeBase, MappedAsDataclass, Mapped, mapped_column
-
-
-class Base(MappedAsDataclass, AsyncAttrs, DeclarativeBase):
-    pass
+from services.database import Base
 
 
 class User(Base):
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    name: Mapped[str]
+    name: Mapped[str] = mapped_column()
     youtube: Mapped[Optional[str]] = mapped_column(default=None)
     twitter: Mapped[Optional[str]] = mapped_column(default=None)
     instagram: Mapped[Optional[str]] = mapped_column(default=None)
     website: Mapped[Optional[str]] = mapped_column(default=None)
     featured: Mapped[bool] = mapped_column(default=True)
-    # created_at: Mapped[Optional[datetime.datetime]] = mapped_column(
-    # server_default=func.now()
-    # )
-
-    # def __init__(self):
-    #     super().__init__()
+    created_at: Mapped[Optional[datetime]
+                       ] = mapped_column(default=func.now())
+    updated_at: Mapped[Optional[datetime]
+                       ] = mapped_column(default=func.now(), server_onupdate=func.now())

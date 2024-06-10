@@ -3,12 +3,22 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.ext.asyncio import AsyncAttrs
+from sqlalchemy.orm import DeclarativeBase, MappedAsDataclass
 
-Base = declarative_base()
+
+class Base(MappedAsDataclass, AsyncAttrs, DeclarativeBase):
+    pass
+
 
 engine = create_async_engine('sqlite+aiosqlite:///./database.db', echo=True)
+
 sessionmaker = async_sessionmaker(autocommit=False, bind=engine)
+
+
+async def init_db() -> None:
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
 
 def get_db_session() -> AsyncSession:
