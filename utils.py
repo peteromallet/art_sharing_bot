@@ -1,7 +1,8 @@
 import discord
 import re
 from datetime import datetime, timedelta, timezone
-from classes import MessageWithReactionCount, User
+from classes import MessageWithReactionCount
+from schemas.user import User
 
 
 async def get_channel_messages_past_24_hours(channel: discord.TextChannel) -> list[discord.Message]:

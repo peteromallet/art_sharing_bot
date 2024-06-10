@@ -1,5 +1,5 @@
 .env
 __pycache__
-database.db
 admin.py
 temp
+*.db

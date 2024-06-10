@@ -1,8 +1,8 @@
 import discord
-from classes import User
 from utils import convert_user_to_markdown
-from handlers.update_details import handle_update_details
-from services.database import get_session, get_user
+from services.database import get_db_session
+from schemas.user import User
+from shared.insert_or_update_user import handle_update_details
 
 
 def format_msg(user_details: User) -> str:
@@ -32,15 +32,14 @@ class UpdateDetailsModal(discord.ui.Modal, title='Update personal details'):
         self.websiteInput.default = self.user_details.website
 
     async def on_submit(self, interaction: discord.Interaction):
-        new_user = User(id=self.user_details.id, name=self.nameInput.value, twitter=self.twitterInput.value,
-                        instagram=self.instagramInput.value, youtube=self.youtubeInput.value, website=self.websiteInput.value, featured=self.user_details.featured)
         # update database with new details
-        new_user_details = handle_update_details(
-            new_user, interaction)
-        self.user_details = new_user_details
+        new_user_details = User(id=self.user_details.id, name=self.nameInput.value, twitter=self.twitterInput.value or None, youtube=self.youtubeInput.value or None,
+                                instagram=self.instagramInput.value or None, website=self.websiteInput.value or None, featured=self.user_details.featured)
 
-        myView = MyView(user_details=self.user_details)
-        await interaction.response.edit_message(content=format_msg(self.user_details), view=myView)
+        new_user_details = await handle_update_details(new_user_details, interaction)
+
+        myView = MyView(user_details=new_user_details)
+        await interaction.response.edit_message(content=format_msg(new_user_details), view=myView)
 
 
 class MyView(discord.ui.View):
@@ -58,26 +57,23 @@ class MyView(discord.ui.View):
 
     @discord.ui.button()
     async def edit_featuring(self, interaction: discord.Interaction, _):
-        new_user = User(id=self.user_details.id, name=self.user_details.name, twitter=self.user_details.twitter,
-                        instagram=self.user_details.instagram, youtube=self.user_details.youtube, website=self.user_details.website, featured=not self.user_details.featured)  # toggle featured
+        new_user = User(id=self.user_details.id, name=self.user_details.name, twitter=self.user_details.twitter or None,
+                        instagram=self.user_details.instagram or None, youtube=self.user_details.youtube or None, website=self.user_details.website or None, featured=not self.user_details.featured)  # toggle featured
 
         # update database with new details
-        new_user_details = handle_update_details(
-            new_user, interaction)
-        self.user_details = new_user_details
+        self.user_details = await handle_update_details(new_user, interaction)
 
         myView = MyView(user_details=self.user_details)
         await interaction.response.edit_message(content=format_msg(self.user_details), view=myView)
 
 
 async def handle_view_update_details_interaction(interaction: discord.Interaction):
-    db_session = get_session()
-    user_details: User = get_user(
-        session=db_session, user_id=interaction.user.id)
+    db_session = get_db_session()
+    user_details: User = await db_session.get(User, interaction.user.id)
 
     if not user_details:
-        user_details = User(id=interaction.user.id, name=interaction.user.global_name,
-                            youtube="", twitter="", instagram="", website="", featured=True)
+        user_details = User(id=interaction.user.id,
+                            name=interaction.user.global_name, featured=True)
 
     myView = MyView(user_details)
     await interaction.response.send_message(format_msg(user_details), view=myView, ephemeral=True)
