@@ -57,8 +57,8 @@ class MyView(discord.ui.View):
 
     @discord.ui.button()
     async def edit_featuring(self, interaction: discord.Interaction, _):
-        new_user = User(id=self.user_details.id, name=self.user_details.name, twitter=self.user_details.twitter or None,
-                        instagram=self.user_details.instagram or None, youtube=self.user_details.youtube or None, website=self.user_details.website or None, featured=not self.user_details.featured)  # toggle featured
+        new_user = User(id=self.user_details.id, name=self.user_details.name, twitter=self.user_details.twitter,
+                        instagram=self.user_details.instagram, youtube=self.user_details.youtube, website=self.user_details.website, featured=not self.user_details.featured)  # toggle featured
 
         # update database with new details
         self.user_details = await handle_update_details(new_user, interaction)
