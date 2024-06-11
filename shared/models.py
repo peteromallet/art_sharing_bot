@@ -1,7 +1,16 @@
 import discord
+from dataclasses import dataclass
 
 
+@dataclass
 class MessageWithReactionCount():
-    def __init__(self, message: discord.Message, unique_reactions_count: int):
-        self.message = message
-        self.unique_reactions_count = unique_reactions_count
+    message: discord.Message
+    unique_reactions_count: int
+
+
+@dataclass
+class SocialMediaPost():
+    post_id: int
+    caption: str
+    attachment_url: str
+    attachment_name: str

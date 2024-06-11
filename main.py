@@ -13,14 +13,16 @@ import asyncio
 from datetime import datetime, timezone
 
 from services.database import get_db_session, init_db
-from shared.models import MessageWithReactionCount
+from shared.models import MessageWithReactionCount, SocialMediaPost
 
 from shared.utils import replace_user_mentions_with_usernames, ensure_blockquote_in_all_lines, get_channel_messages_past_24_hours, get_messages_with_most_reactions, get_messages_with_attachments_and_reactions
 
 from schemas.user import User
 from schemas.post import Post
 
-from constants import GUILD_ID
+from services.post_to_twitter import post_to_twitter
+
+from constants import GUILD_ID, ART_SHARING_CHANNEL, PROJECT_ART_SHARING_CHANNEL
 
 import traceback
 
@@ -105,11 +107,16 @@ async def on_ready():
         # await channel.send("execution continues on_ready..")
         # Run the scheduled task
 
-        # art_sharing_channel = bot.get_channel(ART_SHARING_CHANNEL)
-        # messages = await get_channel_messages_past_24_hours(art_sharing_channel)
-        # valid_messages_with_attachments_and_reactions: list[MessageWithReactionCount] = await get_messages_with_attachments_and_reactions(messages)
+        art_sharing_channel = bot.get_channel(ART_SHARING_CHANNEL)
+        messages = await get_channel_messages_past_24_hours(art_sharing_channel)
+        valid_messages_with_attachments_and_reactions: list[MessageWithReactionCount] = await get_messages_with_attachments_and_reactions(messages)
 
-        # message = valid_messages_with_attachments_and_reactions[0].message
+        m = valid_messages_with_attachments_and_reactions[0]
+        social_media_post = SocialMediaPost(
+            post_id=m.message.id, attachment_url=m.message.attachments[0].url, caption=m.message.content, attachment_name=m.message.attachments[0].filename)
+        await post_to_twitter(social_media_post)
+        # print(message.attachments[0].content_type)
+
         # db_session = get_db_session()
         # post: Post = Post(id=message.id, reaction_count=valid_messages_with_attachments_and_reactions[
         #                   0].unique_reactions_count, comment=message.content, user_id=6883436456442259328)
