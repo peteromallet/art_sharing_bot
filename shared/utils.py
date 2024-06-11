@@ -1,7 +1,7 @@
 import discord
 import re
 from datetime import datetime, timedelta, timezone
-from classes import MessageWithReactionCount
+from shared.models import MessageWithReactionCount
 from schemas.user import User
 
 

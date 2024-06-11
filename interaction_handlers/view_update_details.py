@@ -1,5 +1,5 @@
 import discord
-from utils import convert_user_to_markdown
+from shared.utils import convert_user_to_markdown
 from services.database import get_db_session
 from schemas.user import User
 from shared.insert_or_update_user import handle_update_details

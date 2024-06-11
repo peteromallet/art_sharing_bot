@@ -2,8 +2,8 @@ from dotenv import load_dotenv
 import os
 import discord
 import asyncio
-from classes import MessageWithReactionCount
-from utils import replace_user_mentions_with_usernames, ensure_blockquote_in_all_lines, get_channel_messages_past_24_hours, get_messages_with_most_reactions, get_messages_with_attachments_and_reactions
+from shared.models import MessageWithReactionCount
+from shared.utils import replace_user_mentions_with_usernames, ensure_blockquote_in_all_lines, get_channel_messages_past_24_hours, get_messages_with_most_reactions, get_messages_with_attachments_and_reactions
 
 load_dotenv()
 

@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from utils import convert_user_to_markdown
+from shared.utils import convert_user_to_markdown
 import os
 
 from shared.insert_or_update_user import handle_update_details

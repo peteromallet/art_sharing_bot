@@ -2,16 +2,19 @@ from dotenv import load_dotenv
 import os
 import discord
 from discord.ext import commands, tasks
-from classes import User, MessageWithReactionCount
+# from classes import User, MessageWithReactionCount
 
-from handlers.notify_user_dm import handle_notify_user_interaction
-from handlers.view_update_details import handle_view_update_details_interaction
+from interaction_handlers.notify_user_dm import handle_notify_user_interaction
+from interaction_handlers.view_update_details import handle_view_update_details_interaction
 import asyncio
 from datetime import datetime, timezone
 
-from services.database import get_session, get_user
+from services.database import get_db_session, init_db
+from shared.models import MessageWithReactionCount
 
-from utils import replace_user_mentions_with_usernames, ensure_blockquote_in_all_lines, get_channel_messages_past_24_hours, get_messages_with_most_reactions, get_messages_with_attachments_and_reactions
+from shared.utils import replace_user_mentions_with_usernames, ensure_blockquote_in_all_lines, get_channel_messages_past_24_hours, get_messages_with_most_reactions, get_messages_with_attachments_and_reactions
+
+from schemas.user import User
 
 
 load_dotenv()
@@ -72,8 +75,20 @@ async def post_video_youtube(channel: discord.TextChannel):
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user}')
-    await bot.tree.sync()
+    # await bot.tree.sync()
 
+    if not os.path.exists('./database.db'):
+        await init_db()
+
+    db_session = get_db_session()
+    # user = User(id=123223, name="Yuvraj", website="www.google.com")
+    # db_session.add(user)
+
+    existing_user = await db_session.get(User, 123223)
+    # existing_user.featured = False
+    # print(existing_user)
+    # await db_session.commit()
+    # await db_session.close()
     # execute_at_8_pm_utc.start()
     # execute_at_9_pm_utc.start()
 
@@ -87,12 +102,15 @@ async def on_ready():
     # messages = await get_channel_messages_past_24_hours(art_sharing_channel)
     # valid_messages_with_attachments_and_reactions: list[MessageWithReactionCount] = await get_messages_with_attachments_and_reactions(messages)
 
-    # db_session = get_session()
-    # user_details: User = get_user(db_session, 301463647895683072)
-    # # user_details: User = get_user(db_session, 688343645644259328)
+    # db_session = get_db_session()
+    # # user_details: User = get_user(db_session, 301463647895683072)
+    # user_details: User = await db_session.get(User, 688343645644259328)
 
-    # # TODO: check if user wants to be featured
-    # await handle_notify_user_interaction(bot, valid_messages_with_attachments_and_reactions[0].message, user_details)
+    # message = valid_messages_with_attachments_and_reactions[0].message
+    # message.content = replace_user_mentions_with_usernames(message)
+
+    # # # TODO: check if user wants to be featured
+    # await handle_notify_user_interaction(bot, message, user_details)
 
 
 @bot.tree.command(name="art_sharing_details", description="View and update your art sharing details")
