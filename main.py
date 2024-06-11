@@ -7,6 +7,7 @@ from discord.ext import commands, tasks
 from interaction_handlers.notify_user_dm import handle_notify_user_interaction
 from interaction_handlers.view_update_details import handle_view_update_details_interaction
 from interaction_handlers.display_top_posts import handle_display_top_posts_interaction
+from interaction_handlers.report_errors import handle_report_errors_interaction
 
 import asyncio
 from datetime import datetime, timezone
@@ -21,6 +22,7 @@ from schemas.post import Post
 
 from constants import GUILD_ID
 
+import traceback
 
 load_dotenv()
 
@@ -77,55 +79,62 @@ async def post_video_youtube(channel: discord.TextChannel):
 
 @bot.event
 async def on_ready():
-    print(f'Logged in as {bot.user}')
-    # await bot.tree.sync()
+    try:
 
-    if not os.path.exists('./database.db'):
-        await init_db()
+        print(f'Logged in as {bot.user}')
+        # await bot.tree.sync()
 
-    # db_session = get_db_session()
-    # user = User(id=123223, name="Yuvraj", website="www.google.com")
-    # db_session.add(user)
+        if not os.path.exists('./database.db'):
+            await init_db()
 
-    # existing_user = await db_session.get(User, 123223)
-    # existing_user.featured = False
-    # print(existing_user)
-    # await db_session.commit()
-    # await db_session.close()
-    # execute_at_8_pm_utc.start()
-    # execute_at_9_pm_utc.start()
+        # db_session = get_db_session()
+        # user = User(id=123223, name="Yuvraj", website="www.google.com")
+        # db_session.add(user)
 
-    # channel = bot.get_channel(PROJECT_ART_SHARING_CHANNEL)
+        # existing_user = await db_session.get(User, 123223)
+        # existing_user.featured = False
+        # print(existing_user)
+        # await db_session.commit()
+        # await db_session.close()
+        # execute_at_8_pm_utc.start()
+        # execute_at_9_pm_utc.start()
 
-    # post_videos(channel)
-    # await channel.send("execution continues on_ready..")
-    # Run the scheduled task
+        # channel = bot.get_channel(PROJECT_ART_SHARING_CHANNEL)
 
-    # art_sharing_channel = bot.get_channel(ART_SHARING_CHANNEL)
-    # messages = await get_channel_messages_past_24_hours(art_sharing_channel)
-    # valid_messages_with_attachments_and_reactions: list[MessageWithReactionCount] = await get_messages_with_attachments_and_reactions(messages)
+        # post_videos(channel)
+        # await channel.send("execution continues on_ready..")
+        # Run the scheduled task
 
-    # message = valid_messages_with_attachments_and_reactions[0].message
-    # db_session = get_db_session()
-    # post: Post = Post(id=message.id, reaction_count=valid_messages_with_attachments_and_reactions[
-    #                   0].unique_reactions_count, comment=message.content, user_id=6883436456442259328)
-    # db_session.add(post)
-    # await db_session.commit()
-    # await db_session.close()
+        # art_sharing_channel = bot.get_channel(ART_SHARING_CHANNEL)
+        # messages = await get_channel_messages_past_24_hours(art_sharing_channel)
+        # valid_messages_with_attachments_and_reactions: list[MessageWithReactionCount] = await get_messages_with_attachments_and_reactions(messages)
 
-    # # user_details: User = get_user(db_session, 301463647895683072)
-    # user_details: User = await db_session.get(User, 688343645644259328)
+        # message = valid_messages_with_attachments_and_reactions[0].message
+        # db_session = get_db_session()
+        # post: Post = Post(id=message.id, reaction_count=valid_messages_with_attachments_and_reactions[
+        #                   0].unique_reactions_count, comment=message.content, user_id=6883436456442259328)
+        # db_session.add(post)
+        # await db_session.commit()
+        # await db_session.close()
 
-    # message.content = replace_user_mentions_with_usernames(message)
+        # # user_details: User = get_user(db_session, 301463647895683072)
+        # user_details: User = await db_session.get(User, 688343645644259328)
 
-    # # # TODO: check if user wants to be featured
-    # await handle_notify_user_interaction(bot, message, user_details)
+        # message.content = replace_user_mentions_with_usernames(message)
 
-    # await handle_display_top_posts_interaction(bot=bot, top_n=2)
+        # # # TODO: check if user wants to be featured
+        # await handle_notify_user_interaction(bot, message, user_details)
+
+        # await handle_display_top_posts_interaction(bot=bot, top_n=2)
+    except Exception:
+        await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc())
 
 
 @bot.tree.command(name="art_sharing_details", description="View and update your art sharing details")
 async def view_update_details(interaction: discord.Interaction):
-    await handle_view_update_details_interaction(interaction=interaction)
+    try:
+        await handle_view_update_details_interaction(interaction=interaction)
+    except Exception:
+        await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc())
 
 bot.run(DISCORD_BOT_TOKEN)
