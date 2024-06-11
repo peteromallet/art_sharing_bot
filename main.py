@@ -6,6 +6,8 @@ from discord.ext import commands, tasks
 
 from interaction_handlers.notify_user_dm import handle_notify_user_interaction
 from interaction_handlers.view_update_details import handle_view_update_details_interaction
+from interaction_handlers.display_top_posts import handle_display_top_posts_interaction
+
 import asyncio
 from datetime import datetime, timezone
 
@@ -17,13 +19,13 @@ from shared.utils import replace_user_mentions_with_usernames, ensure_blockquote
 from schemas.user import User
 from schemas.post import Post
 
+from constants import GUILD_ID
+
 
 load_dotenv()
 
 DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
-ART_SHARING_CHANNEL = 1138865343314530324
-PROJECT_ART_SHARING_CHANNEL = 1244440385825275955
-GUILD = discord.Object(id=1076117621407223829)  # banodoco
+GUILD = discord.Object(id=GUILD_ID)  # banodoco
 
 intents = discord.Intents.default()
 intents.messages = True
@@ -99,17 +101,17 @@ async def on_ready():
     # await channel.send("execution continues on_ready..")
     # Run the scheduled task
 
-    art_sharing_channel = bot.get_channel(ART_SHARING_CHANNEL)
-    messages = await get_channel_messages_past_24_hours(art_sharing_channel)
-    valid_messages_with_attachments_and_reactions: list[MessageWithReactionCount] = await get_messages_with_attachments_and_reactions(messages)
+    # art_sharing_channel = bot.get_channel(ART_SHARING_CHANNEL)
+    # messages = await get_channel_messages_past_24_hours(art_sharing_channel)
+    # valid_messages_with_attachments_and_reactions: list[MessageWithReactionCount] = await get_messages_with_attachments_and_reactions(messages)
 
-    message = valid_messages_with_attachments_and_reactions[0].message
-    db_session = get_db_session()
-    post: Post = Post(id=message.id, reaction_count=valid_messages_with_attachments_and_reactions[
-                      0].unique_reactions_count, comment=message.content, user_id=6883436456442259328)
-    db_session.add(post)
-    await db_session.commit()
-    await db_session.close()
+    # message = valid_messages_with_attachments_and_reactions[0].message
+    # db_session = get_db_session()
+    # post: Post = Post(id=message.id, reaction_count=valid_messages_with_attachments_and_reactions[
+    #                   0].unique_reactions_count, comment=message.content, user_id=6883436456442259328)
+    # db_session.add(post)
+    # await db_session.commit()
+    # await db_session.close()
 
     # # user_details: User = get_user(db_session, 301463647895683072)
     # user_details: User = await db_session.get(User, 688343645644259328)
@@ -118,6 +120,8 @@ async def on_ready():
 
     # # # TODO: check if user wants to be featured
     # await handle_notify_user_interaction(bot, message, user_details)
+
+    # await handle_display_top_posts_interaction(bot=bot, top_n=2)
 
 
 @bot.tree.command(name="art_sharing_details", description="View and update your art sharing details")

@@ -35,6 +35,8 @@ def replace_user_mentions_with_usernames(message: discord.Message) -> str:
 
 
 def ensure_blockquote_in_all_lines(text: str) -> str:
+    if text == '':
+        return text
     new_lines = (text.split('\n'))
     new_lines = list(map(lambda x: f"\n> _{x}_", new_lines))
     return ''.join(new_lines)
