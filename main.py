@@ -15,6 +15,7 @@ from shared.models import MessageWithReactionCount
 from shared.utils import replace_user_mentions_with_usernames, ensure_blockquote_in_all_lines, get_channel_messages_past_24_hours, get_messages_with_most_reactions, get_messages_with_attachments_and_reactions
 
 from schemas.user import User
+from schemas.post import Post
 
 
 load_dotenv()
@@ -80,11 +81,11 @@ async def on_ready():
     if not os.path.exists('./database.db'):
         await init_db()
 
-    db_session = get_db_session()
+    # db_session = get_db_session()
     # user = User(id=123223, name="Yuvraj", website="www.google.com")
     # db_session.add(user)
 
-    existing_user = await db_session.get(User, 123223)
+    # existing_user = await db_session.get(User, 123223)
     # existing_user.featured = False
     # print(existing_user)
     # await db_session.commit()
@@ -98,15 +99,21 @@ async def on_ready():
     # await channel.send("execution continues on_ready..")
     # Run the scheduled task
 
-    # art_sharing_channel = bot.get_channel(ART_SHARING_CHANNEL)
-    # messages = await get_channel_messages_past_24_hours(art_sharing_channel)
-    # valid_messages_with_attachments_and_reactions: list[MessageWithReactionCount] = await get_messages_with_attachments_and_reactions(messages)
+    art_sharing_channel = bot.get_channel(ART_SHARING_CHANNEL)
+    messages = await get_channel_messages_past_24_hours(art_sharing_channel)
+    valid_messages_with_attachments_and_reactions: list[MessageWithReactionCount] = await get_messages_with_attachments_and_reactions(messages)
 
-    # db_session = get_db_session()
+    message = valid_messages_with_attachments_and_reactions[0].message
+    db_session = get_db_session()
+    post: Post = Post(id=message.id, reaction_count=valid_messages_with_attachments_and_reactions[
+                      0].unique_reactions_count, comment=message.content, user_id=6883436456442259328)
+    db_session.add(post)
+    await db_session.commit()
+    await db_session.close()
+
     # # user_details: User = get_user(db_session, 301463647895683072)
     # user_details: User = await db_session.get(User, 688343645644259328)
 
-    # message = valid_messages_with_attachments_and_reactions[0].message
     # message.content = replace_user_mentions_with_usernames(message)
 
     # # # TODO: check if user wants to be featured
