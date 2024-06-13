@@ -50,9 +50,8 @@ async def execute_at_8_pm_utc():
 
             if not user_details:
                 # user hasn't updated their details, so we add it to the database
-                discord_details = await bot.fetch_user(user_id)
                 new_user = User(id=user_id,
-                                name=discord_details.global_name, featured=True)
+                                name=top_message.message.author.global_name, featured=True)
                 user_details = await handle_update_details(new_user=new_user)
 
             # check if user wants to be featured
