@@ -1,7 +1,7 @@
 import discord
 import re
 from datetime import datetime, timedelta, timezone
-from shared.models import MessageWithReactionCount
+from shared.models import MessageWithReactionCount, SocialMedia
 from schemas.user import User
 import aiohttp
 
@@ -83,3 +83,21 @@ async def download_file(url, filename):
             if resp.status == 200:
                 with open(filename, 'wb') as f:
                     f.write(await resp.read())
+
+
+def create_post_caption(user_details: User, comment: str, platform: SocialMedia) -> str:
+    caption = "Featured piece by"
+    if platform == SocialMedia.TWITTER:
+        if user_details.twitter is not None:
+            user_twitter = user_details.twitter
+            caption += f" {'@' if user_twitter[0] != '@' else ''}{user_twitter}"
+        else:
+            caption += f" {user_details.name}"
+
+    if comment is not None:
+        caption += f"\n\nArtist Comment: {comment}"
+
+    if user_details.website is not None:
+        caption += f"\n\nYou can find their website here: {user_details.website}"
+
+    return caption

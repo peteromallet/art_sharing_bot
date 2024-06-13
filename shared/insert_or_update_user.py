@@ -19,7 +19,7 @@ async def handle_update_details(new_user: User) -> User:
     else:
         # update changed attributes only
         new_user_attributes = list(
-            filter(lambda x: not x.startswith('_') and x != 'created_at', new_user.__dict__.keys()))
+            filter(lambda x: not x.startswith('_') and x != 'created_at' and x != 'posts', new_user.__dict__.keys()))
         for attribute in new_user_attributes:
             new_attribute_value = getattr(new_user, attribute, None)
             if new_attribute_value != existing_user_details.__dict__.get(attribute):

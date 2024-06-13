@@ -1,5 +1,6 @@
 import discord
 from dataclasses import dataclass
+from enum import Enum
 
 
 @dataclass
@@ -14,3 +15,10 @@ class SocialMediaPost():
     caption: str
     attachment_url: str
     attachment_name: str
+
+
+class SocialMedia(Enum):
+    TWITTER = "twitter"
+    YOUTUBE = "youtube"
+    INSTAGRAM = "instagram"
+    TIKTOK = "tiktok"

@@ -11,8 +11,9 @@ from interaction_handlers.view_update_details import handle_view_update_details_
 from interaction_handlers.display_top_posts import handle_display_top_posts_interaction, handle_get_top_valid_messages_with_attachments_and_reactions
 from interaction_handlers.report_errors import handle_report_errors_interaction
 
-from shared.models import MessageWithReactionCount, SocialMediaPost
+from shared.models import MessageWithReactionCount, SocialMediaPost, SocialMedia
 from shared.insert_or_update_user import handle_update_details
+from shared.utils import create_post_caption
 
 from services.database import get_db_session, init_db
 from services.post_to_twitter import post_to_twitter
@@ -103,20 +104,22 @@ async def execute_at_9_pm_utc():
 
                 # save to database
                 post: Post = Post(id=top_message.message.id, reaction_count=top_message.unique_reactions_count,
-                                  comment=comment, user_id=user_id)
-                db_session.add(post)
+                                  comment=comment)
+                user_details.posts.append(post)
+
                 await db_session.commit()
+                await db_session.close()
 
                 # create social media post object
+                post_caption = create_post_caption(
+                    comment=comment, platform=SocialMedia.TWITTER, user_details=user_details)
                 social_media_post = SocialMediaPost(
-                    post_id=top_message.message.id, attachment_url=top_message.message.attachments[0].url, caption=comment, attachment_name=top_message.message.attachments[0].filename)
+                    post_id=top_message.message.id, attachment_url=top_message.message.attachments[0].url, caption=post_caption, attachment_name=top_message.message.attachments[0].filename)
                 social_media_posts.append(social_media_post)
 
             # break  # TODO: remove
         except Exception:
             await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc())
-
-    await db_session.close()
 
     # TODO: schedule posts to social media, every 15 minutes
     for social_media_post in social_media_posts:
