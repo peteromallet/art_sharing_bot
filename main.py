@@ -128,15 +128,6 @@ async def execute_at_9_pm_utc():
             await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc())
 
 
-async def post_video_twitter(channel: discord.TextChannel):
-  # Your list of messages
-    messages = [1, 2, 3]
-
-    for message in messages:
-        await channel.send(f"Posting video {message} to twitter, in background inside execute_at_8_pm_utc...{datetime.now().time()}")
-        await asyncio.sleep(5)
-
-
 @bot.event
 async def on_ready():
     try:
@@ -152,7 +143,7 @@ async def on_ready():
         execute_at_8_pm_utc.start()
         execute_at_9_pm_utc.start()
 
-    except Exception as e:
+    except Exception:
         await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc())
 
 
