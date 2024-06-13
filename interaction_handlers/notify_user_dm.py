@@ -53,7 +53,7 @@ class UpdateCommentModal(discord.ui.Modal, title='Update comment'):
 
         self.dataSharer.comment = self.commentInput.value
         myView = MyView(dataSharer=self.dataSharer)
-        await interaction.response.edit_message(content=format_msg(self.dataSharer), view=myView)
+        await interaction.response.edit_message(content=format_msg(self.dataSharer), view=myView, delete_after=3600)
 
 
 class UpdateDetailsModal(discord.ui.Modal, title='Update personal details'):
@@ -77,8 +77,7 @@ class UpdateDetailsModal(discord.ui.Modal, title='Update personal details'):
         new_user = User(id=self.dataSharer.user_details.id, name=self.nameInput.value, twitter=self.twitterInput.value or None,
                         instagram=self.instagramInput.value or None, youtube=self.youtubeInput.value or None, website=self.websiteInput.value or None, featured=self.dataSharer.user_details.featured)
         # update database with new details
-        new_user_details = await handle_update_details(
-            new_user=new_user, interaction=interaction)
+        new_user_details = await handle_update_details(new_user=new_user)
         self.dataSharer.user_details = new_user_details
 
         # set updated comment, if any
@@ -88,7 +87,7 @@ class UpdateDetailsModal(discord.ui.Modal, title='Update personal details'):
                 self.dataSharer.comment = edited_comment
 
         myView = MyView(dataSharer=self.dataSharer)
-        await interaction.response.edit_message(content=format_msg(self.dataSharer), view=myView)
+        await interaction.response.edit_message(content=format_msg(self.dataSharer), view=myView, delete_after=3600)
 
 
 class MyView(discord.ui.View):
@@ -115,7 +114,7 @@ class MyView(discord.ui.View):
         new_user = User(id=self.dataSharer.user_details.id, name=self.user_details.name, twitter=self.user_details.twitter,
                         instagram=self.user_details.instagram, youtube=self.user_details.youtube, website=self.user_details.website, featured=not self.dataSharer.user_details.featured)
         # update database with new details
-        self.dataSharer.user_details = await handle_update_details(new_user=new_user, interaction=interaction)
+        self.dataSharer.user_details = await handle_update_details(new_user=new_user)
 
         # set updated comment, if any
         if os.path.exists(self.dataSharer.file_save_path):
@@ -124,7 +123,7 @@ class MyView(discord.ui.View):
                 self.dataSharer.comment = edited_comment
 
         myView = MyView(dataSharer=self.dataSharer)
-        await interaction.response.edit_message(content=format_msg(self.dataSharer), view=myView)
+        await interaction.response.edit_message(content=format_msg(self.dataSharer), view=myView, delete_after=3600)
 
 
 async def handle_notify_user_interaction(bot: commands.Bot, message: discord.Message, user_details: User):
@@ -137,5 +136,6 @@ async def handle_notify_user_interaction(bot: commands.Bot, message: discord.Mes
                             jump_url=message.jump_url, user_details=user_details)
     myView = MyView(dataSharer)
 
-    user = await bot.fetch_user(user_details.id)  # TODO: use author.send
-    await user.send(format_msg(dataSharer), view=myView)
+    # user = await bot.fetch_user(user_details.id)  # TODO: use author.send
+    # delete after 1 hour
+    await message.author.send(format_msg(dataSharer), view=myView, delete_after=3600)

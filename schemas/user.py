@@ -23,7 +23,7 @@ class User(Base):
     updated_at: Mapped[Optional[datetime]
                        ] = mapped_column(default=func.now(), server_onupdate=func.now())
     posts: Mapped[List["Post"]] = relationship(
-        backref="post", default_factory=list, lazy="joined")
+        default_factory=list, lazy="joined")
 
 # https://docs.sqlalchemy.org/en/20/orm/basic_relationships.html#one-to-many
 # https://www.youtube.com/watch?v=wvQJzMrKy9E

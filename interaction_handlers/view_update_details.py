@@ -36,13 +36,13 @@ class UpdateDetailsModal(discord.ui.Modal, title='Update personal details'):
         new_user_details = User(id=self.user_details.id, name=self.nameInput.value, twitter=self.twitterInput.value or None, youtube=self.youtubeInput.value or None,
                                 instagram=self.instagramInput.value or None, website=self.websiteInput.value or None, featured=self.user_details.featured)
 
-        new_user_details = await handle_update_details(new_user_details, interaction)
+        new_user_details = await handle_update_details(new_user=new_user_details)
 
-        myView = MyView(user_details=new_user_details)
+        myView = ViewUpdateDetailsView(user_details=new_user_details)
         await interaction.response.edit_message(content=format_msg(new_user_details), view=myView)
 
 
-class MyView(discord.ui.View):
+class ViewUpdateDetailsView(discord.ui.View):
     def __init__(self, user_details: User):
         super().__init__()
         self.timeout = None
@@ -61,19 +61,20 @@ class MyView(discord.ui.View):
                         instagram=self.user_details.instagram, youtube=self.user_details.youtube, website=self.user_details.website, featured=not self.user_details.featured)  # toggle featured
 
         # update database with new details
-        self.user_details = await handle_update_details(new_user, interaction)
+        self.user_details = await handle_update_details(new_user=new_user)
 
-        myView = MyView(user_details=self.user_details)
+        myView = ViewUpdateDetailsView(user_details=self.user_details)
         await interaction.response.edit_message(content=format_msg(self.user_details), view=myView)
 
 
 async def handle_view_update_details_interaction(interaction: discord.Interaction):
     db_session = get_db_session()
     user_details: User = await db_session.get(User, interaction.user.id)
+    await db_session.close()
 
     if not user_details:
         user_details = User(id=interaction.user.id,
                             name=interaction.user.global_name, featured=True)
 
-    myView = MyView(user_details)
-    await interaction.response.send_message(format_msg(user_details), view=myView, ephemeral=True)
+    myView = ViewUpdateDetailsView(user_details)
+    await interaction.response.send_message(format_msg(user_details), view=myView, ephemeral=True, delete_after=60)

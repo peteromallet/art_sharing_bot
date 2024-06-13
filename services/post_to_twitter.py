@@ -12,7 +12,7 @@ CONSUMER_SECRET = os.getenv("TWITTER_CONSUMER_SECRET")
 ACCESS_TOKEN = os.getenv("TWITTER_ACCESS_TOKEN")
 ACCESS_TOKEN_SECRET = os.getenv("TWITTER_ACCESS_TOKEN_SECRET")
 
-# https://github.com/peteromallet/art_sharing_bot/blob/main/bot.py#L62
+# https://github.com/peteromallet/art_sharing_bot/blob/main/bot.py
 
 
 async def post_to_twitter(social_media_post: SocialMediaPost) -> None:
@@ -43,4 +43,4 @@ async def post_to_twitter(social_media_post: SocialMediaPost) -> None:
         None, lambda: client.create_tweet(text=social_media_post.caption, media_ids=[media_id]))
 
     # Delete the file after posting
-    os.remove(file_save_path)
+    # os.remove(file_save_path)
