@@ -42,5 +42,6 @@ async def post_to_twitter(social_media_post: SocialMediaPost) -> None:
     await loop.run_in_executor(
         None, lambda: client.create_tweet(text=social_media_post.caption, media_ids=[media_id]))
 
+    # TODO: delete at top level, if applicable
     # Delete the file after posting
-    # os.remove(file_save_path)
+    os.remove(file_save_path)
