@@ -39,7 +39,7 @@ class UpdateDetailsModal(discord.ui.Modal, title='Update personal details'):
         new_user_details = await handle_update_details(new_user=new_user_details)
 
         myView = ViewUpdateDetailsView(user_details=new_user_details)
-        await interaction.response.edit_message(content=format_msg(new_user_details), view=myView)
+        await interaction.response.edit_message(content=format_msg(new_user_details), view=myView, delete_after=60)
 
 
 class ViewUpdateDetailsView(discord.ui.View):
