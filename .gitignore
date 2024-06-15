@@ -5,3 +5,4 @@ temp
 *.db
 .DS_Store
 *.pyc
+.env.production

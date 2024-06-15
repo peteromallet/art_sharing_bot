@@ -74,7 +74,7 @@ async def get_messages_with_attachments_and_reactions(messages: list[discord.Mes
 
 def convert_user_to_markdown(user: User) -> str:
 
-    return f"**Name:** {user.name}\n**Youtube:** {user.youtube or ''}\n**Twitter:** {user.twitter or ''}\n**Instagram:** {user.instagram or ''}\n**Website:** {user.website or ''}\n**Okay To Feature:** {user.featured}"
+    return f"**Name:** {user.name}\n**Youtube handle:** {user.youtube or ''}\n**Twitter handle:** {user.twitter or ''}\n**Instagram handle:** {user.instagram or ''}\n**Website:** {user.website or ''}\n**Okay To Feature:** {user.featured}"
 
 
 async def download_file(url, filename):
