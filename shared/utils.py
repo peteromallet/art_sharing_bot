@@ -85,6 +85,13 @@ async def download_file(url, filename):
                     f.write(await resp.read())
 
 
+def truncate_with_ellipsis(text, max_length):
+    if len(text) <= max_length:
+        return text
+    else:
+        return text[:max_length-3] + "..."
+
+
 def create_post_caption(user_details: User, comment: str, platform: SocialMedia) -> str:
     caption = "Featured piece by"
     if platform == SocialMedia.TWITTER:
@@ -95,7 +102,8 @@ def create_post_caption(user_details: User, comment: str, platform: SocialMedia)
             caption += f" {user_details.name}"
 
     if comment and len(comment) > 0:
-        caption += f"\n\nArtist Comment: {comment}"
+        # max length of twitter caption is 280, must accommodate for 3 lines of text
+        caption += f"\n\nArtist Comment: {truncate_with_ellipsis(comment, 200)}"
 
     if user_details.website is not None:
         caption += f"\n\nYou can find their website here: {user_details.website}"
