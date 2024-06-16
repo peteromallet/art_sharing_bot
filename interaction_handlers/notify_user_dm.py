@@ -5,6 +5,7 @@ import os
 
 from shared.insert_or_update_user import handle_update_details
 from schemas.user import User
+from .logging import handle_report_log_interaction
 
 # send dm to user
 # Edit comment button - opens a modal for editing comment
@@ -13,11 +14,12 @@ from schemas.user import User
 
 
 class DataSharer():
-    def __init__(self, comment: str = "", file_save_path: str = "", jump_url: str = "", user_details: User = None):
+    def __init__(self, comment: str = "", file_save_path: str = "", jump_url: str = "", user_details: User = None, bot: commands.Bot = None):
         self.comment = comment
         self.file_save_path = file_save_path
         self.jump_url = jump_url
         self.user_details = user_details
+        self.bot = bot
 
 
 def format_msg(dataSharer: DataSharer) -> str:
@@ -54,6 +56,7 @@ class UpdateCommentModal(discord.ui.Modal, title='Update comment'):
         self.dataSharer.comment = self.commentInput.value
         myView = MyView(dataSharer=self.dataSharer)
         await interaction.response.edit_message(content=format_msg(self.dataSharer), view=myView, delete_after=3600)
+        await handle_report_log_interaction(bot=self.dataSharer.bot, message=f"{interaction.user.global_name} updated comment for {self.dataSharer.jump_url} via DM")
 
 
 class UpdateDetailsModal(discord.ui.Modal, title='Update personal details'):
@@ -92,6 +95,7 @@ class UpdateDetailsModal(discord.ui.Modal, title='Update personal details'):
 
         myView = MyView(dataSharer=self.dataSharer)
         await interaction.response.edit_message(content=format_msg(self.dataSharer), view=myView, delete_after=3600)
+        await handle_report_log_interaction(bot=self.dataSharer.bot, message=f"{interaction.user.global_name} updated personal details from {self.dataSharer.jump_url} via DM")
 
 
 class MyView(discord.ui.View):
@@ -102,6 +106,7 @@ class MyView(discord.ui.View):
         self.user_details = self.dataSharer.user_details
         self.children[2].label = "Stop being featured" if self.dataSharer.user_details.featured else "Allow to be featured"
         self.children[2].style = discord.ButtonStyle.red if self.dataSharer.user_details.featured else discord.ButtonStyle.green
+        self.bot = self.dataSharer.bot
 
     @discord.ui.button(label="Edit Comment", style=discord.ButtonStyle.grey)
     async def open_comment_modal(self, interaction: discord.Interaction, _):
@@ -128,6 +133,7 @@ class MyView(discord.ui.View):
 
         myView = MyView(dataSharer=self.dataSharer)
         await interaction.response.edit_message(content=format_msg(self.dataSharer), view=myView, delete_after=3600)
+        await handle_report_log_interaction(bot=self.dataSharer.bot, message=f"{interaction.user.global_name} updated featuring to {self.dataSharer.user_details.featured} for {self.dataSharer.jump_url} via DM")
 
 
 async def handle_notify_user_interaction(bot: commands.Bot, message: discord.Message, user_details: User):
@@ -137,9 +143,10 @@ async def handle_notify_user_interaction(bot: commands.Bot, message: discord.Mes
     file_save_path = os.path.join(tmp_dir, f"{message.id}.txt")
 
     dataSharer = DataSharer(comment=original_comment, file_save_path=file_save_path,
-                            jump_url=message.jump_url, user_details=user_details)
+                            jump_url=message.jump_url, user_details=user_details, bot=bot)
     myView = MyView(dataSharer)
 
     # user = await bot.fetch_user(user_details.id)  # TODO: use author.send
     # delete after 1 hour
+    # await user.send(format_msg(dataSharer), view=myView, delete_after=3600)
     await message.author.send(format_msg(dataSharer), view=myView, delete_after=3600)

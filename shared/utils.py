@@ -94,7 +94,7 @@ def create_post_caption(user_details: User, comment: str, platform: SocialMedia)
         else:
             caption += f" {user_details.name}"
 
-    if comment is not None:
+    if comment and len(comment) > 0:
         caption += f"\n\nArtist Comment: {comment}"
 
     if user_details.website is not None:

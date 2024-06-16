@@ -3,6 +3,8 @@ from shared.utils import convert_user_to_markdown
 from services.database import get_db_session
 from schemas.user import User
 from shared.insert_or_update_user import handle_update_details
+from discord.ext import commands
+from .logging import handle_report_log_interaction
 
 
 def format_msg(user_details: User) -> str:
@@ -25,7 +27,7 @@ class UpdateDetailsModal(discord.ui.Modal, title='Update personal details'):
     websiteInput = discord.ui.TextInput(
         label='Website', required=False, placeholder='https://website.com')
 
-    def __init__(self, user_details: User):
+    def __init__(self, user_details: User, bot: commands.Bot):
         super().__init__()
         self.user_details = user_details
         # set default values
@@ -34,6 +36,7 @@ class UpdateDetailsModal(discord.ui.Modal, title='Update personal details'):
         self.instagramInput.default = self.user_details.instagram
         self.youtubeInput.default = self.user_details.youtube
         self.websiteInput.default = self.user_details.website
+        self.bot = bot
 
     async def on_submit(self, interaction: discord.Interaction):
         # update database with new details
@@ -42,21 +45,25 @@ class UpdateDetailsModal(discord.ui.Modal, title='Update personal details'):
 
         new_user_details = await handle_update_details(new_user=new_user_details)
 
-        myView = ViewUpdateDetailsView(user_details=new_user_details)
+        myView = ViewUpdateDetailsView(
+            user_details=new_user_details, bot=self.bot)
         await interaction.response.edit_message(content=format_msg(new_user_details), view=myView, delete_after=60)
+        await handle_report_log_interaction(bot=self.bot, message=f"{interaction.user.global_name} updated personal details")
 
 
 class ViewUpdateDetailsView(discord.ui.View):
-    def __init__(self, user_details: User):
+    def __init__(self, user_details: User, bot: commands.Bot):
         super().__init__()
         self.timeout = None
         self.user_details = user_details
         self.children[1].label = "Stop being featured" if self.user_details.featured else "Allow to be featured"
         self.children[1].style = discord.ButtonStyle.red if self.user_details.featured else discord.ButtonStyle.green
+        self.bot = bot
 
     @discord.ui.button(label="Edit Details", style=discord.ButtonStyle.blurple)
     async def open_details_modal(self, interaction: discord.Interaction, _):
-        updateDetailsModal = UpdateDetailsModal(self.user_details)
+        updateDetailsModal = UpdateDetailsModal(
+            user_details=self.user_details, bot=self.bot)
         await interaction.response.send_modal(updateDetailsModal)
 
     @discord.ui.button()
@@ -67,11 +74,13 @@ class ViewUpdateDetailsView(discord.ui.View):
         # update database with new details
         self.user_details = await handle_update_details(new_user=new_user)
 
-        myView = ViewUpdateDetailsView(user_details=self.user_details)
+        myView = ViewUpdateDetailsView(
+            user_details=self.user_details, bot=self.bot)
         await interaction.response.edit_message(content=format_msg(self.user_details), view=myView)
+        await handle_report_log_interaction(bot=self.bot, message=f"{interaction.user.global_name} updated featuring to {self.user_details.featured}")
 
 
-async def handle_view_update_details_interaction(interaction: discord.Interaction):
+async def handle_view_update_details_interaction(bot: commands.Bot, interaction: discord.Interaction):
     db_session = get_db_session()
     user_details: User = await db_session.get(User, interaction.user.id)
     await db_session.close()
@@ -80,5 +89,5 @@ async def handle_view_update_details_interaction(interaction: discord.Interactio
         user_details = User(id=interaction.user.id,
                             name=interaction.user.global_name, featured=True)
 
-    myView = ViewUpdateDetailsView(user_details)
+    myView = ViewUpdateDetailsView(user_details=user_details, bot=bot)
     await interaction.response.send_message(format_msg(user_details), view=myView, ephemeral=True, delete_after=60)

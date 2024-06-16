@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from interaction_handlers.notify_user_dm import handle_notify_user_interaction
 from interaction_handlers.view_update_details import handle_view_update_details_interaction
 from interaction_handlers.display_top_posts import handle_display_top_posts_interaction, handle_get_top_valid_messages_with_attachments_and_reactions
-from interaction_handlers.report_errors import handle_report_errors_interaction
+from interaction_handlers.logging import handle_report_errors_interaction, handle_report_log_interaction
 
 from shared.models import MessageWithReactionCount, SocialMediaPost, SocialMedia
 from shared.insert_or_update_user import handle_update_details
@@ -37,7 +37,8 @@ intents.members = True
 bot = commands.Bot(command_prefix='/', intents=intents)
 
 
-@tasks.loop(time=datetime.now(timezone.utc).replace(hour=20, minute=0, second=0, microsecond=0).time())
+@tasks.loop(time=datetime.now(timezone.utc).replace(hour=18, minute=30, second=0, microsecond=0).time())
+# @tasks.loop(time=datetime.now(timezone.utc).replace(hour=20, minute=0, second=0, microsecond=0).time())
 async def execute_at_8_pm_utc():
     top_6_messages: list[MessageWithReactionCount] = await handle_get_top_valid_messages_with_attachments_and_reactions(bot=bot, top_n=6)
 
@@ -58,6 +59,8 @@ async def execute_at_8_pm_utc():
             # check if user wants to be featured
             if user_details.featured:
                 await handle_notify_user_interaction(bot=bot, message=top_message.message, user_details=user_details)
+                await handle_report_log_interaction(bot=bot, message=f"{user_details.name} received DM for {top_message.message.jump_url}")
+                # await handle_report_log_interaction(bot=bot, message=f"{top_message.message.author.global_name} received DM for {top_message.message.jump_url}")
 
             # break  # TODO: remove
         except Exception:
@@ -66,7 +69,8 @@ async def execute_at_8_pm_utc():
     await db_session.close()
 
 
-@tasks.loop(time=datetime.now(timezone.utc).replace(hour=21, minute=0, second=0, microsecond=0).time())
+@tasks.loop(time=datetime.now(timezone.utc).replace(hour=19, minute=0, second=0, microsecond=0).time())
+# @tasks.loop(time=datetime.now(timezone.utc).replace(hour=21, minute=0, second=0, microsecond=0).time())
 async def execute_at_9_pm_utc():
 
     top_4_messages: list[MessageWithReactionCount] = await handle_get_top_valid_messages_with_attachments_and_reactions(bot=bot, top_n=4)
@@ -152,7 +156,8 @@ async def on_ready():
 @bot.tree.command(name="art_sharing_details", description="View and update your art sharing details")
 async def view_update_details(interaction: discord.Interaction):
     try:
-        await handle_view_update_details_interaction(interaction=interaction)
+        await handle_view_update_details_interaction(bot=bot, interaction=interaction)
+        await handle_report_log_interaction(bot=bot, message=f"{interaction.user.global_name} used the `/art_sharing_details` command")
     except Exception:
         await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc())
 
