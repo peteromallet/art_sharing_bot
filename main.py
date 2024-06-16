@@ -37,10 +37,14 @@ intents.members = True
 bot = commands.Bot(command_prefix='/', intents=intents)
 
 
-@tasks.loop(time=datetime.now(timezone.utc).replace(hour=18, minute=30, second=0, microsecond=0).time())
-# @tasks.loop(time=datetime.now(timezone.utc).replace(hour=20, minute=0, second=0, microsecond=0).time())
+# @tasks.loop(time=datetime.now(timezone.utc).replace(hour=18, minute=30, second=0, microsecond=0).time())
+@tasks.loop(time=datetime.now(timezone.utc).replace(hour=20, minute=0, second=0, microsecond=0).time())
 async def execute_at_8_pm_utc():
     top_6_messages: list[MessageWithReactionCount] = await handle_get_top_valid_messages_with_attachments_and_reactions(bot=bot, top_n=6)
+
+    # TODO: post top posts to discord
+    await handle_display_top_posts_interaction(bot=bot, top_messages=top_6_messages)
+    await handle_report_log_interaction(bot=bot, message=f"{len(top_6_messages)} posts were posted to discord (Top 6)")
 
     db_session = get_db_session()
 
@@ -68,14 +72,12 @@ async def execute_at_8_pm_utc():
     await db_session.close()
 
 
-@tasks.loop(time=datetime.now(timezone.utc).replace(hour=19, minute=0, second=0, microsecond=0).time())
-# @tasks.loop(time=datetime.now(timezone.utc).replace(hour=21, minute=0, second=0, microsecond=0).time())
+# @tasks.loop(time=datetime.now(timezone.utc).replace(hour=19, minute=0, second=0, microsecond=0).time())
+@tasks.loop(time=datetime.now(timezone.utc).replace(hour=21, minute=0, second=0, microsecond=0).time())
 async def execute_at_9_pm_utc():
 
     top_4_messages: list[MessageWithReactionCount] = await handle_get_top_valid_messages_with_attachments_and_reactions(bot=bot, top_n=4)
-
-    # TODO: post top posts to discord
-    await handle_display_top_posts_interaction(bot=bot, top_messages=top_4_messages)
+    await handle_report_log_interaction(bot=bot, message=f"{len(top_4_messages)} posts will be posted to social media (Top 4)")
 
     db_session = get_db_session()
 
@@ -128,6 +130,8 @@ async def execute_at_9_pm_utc():
     for social_media_post in social_media_posts:
         try:
             await post_to_twitter(social_media_post)
+            await handle_report_log_interaction(bot=bot, message=f"Posted post with id {social_media_post.post_id} to Twitter")
+
             await asyncio.sleep(15*60)
         except Exception:
             await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc())

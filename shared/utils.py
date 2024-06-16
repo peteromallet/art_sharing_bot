@@ -60,8 +60,8 @@ async def get_messages_with_attachments_and_reactions(messages: list[discord.Mes
     valid_messages_with_reaction_count: list[MessageWithReactionCount] = []
 
     for message in messages:
-        # choose messages with atleast 1 reaction and 1 attachment
-        if len(message.attachments) > 0 and len(message.reactions) > 0:
+        # choose messages with atleast 5 reaction and 1 attachment
+        if len(message.attachments) > 0 and len(message.reactions) >= 5:
             attachment = message.attachments[0]
             # validate attachment type
             if attachment.filename.lower().endswith(('.mp4', '.mov', '.wmv', '.avi', '.gif', '.webm', '.mkv')):
