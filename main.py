@@ -59,8 +59,7 @@ async def execute_at_8_pm_utc():
             # check if user wants to be featured
             if user_details.featured:
                 await handle_notify_user_interaction(bot=bot, message=top_message.message, user_details=user_details)
-                await handle_report_log_interaction(bot=bot, message=f"{user_details.name} received DM for {top_message.message.jump_url}")
-                # await handle_report_log_interaction(bot=bot, message=f"{top_message.message.author.global_name} received DM for {top_message.message.jump_url}")
+                await handle_report_log_interaction(bot=bot, message=f"{top_message.message.author.global_name} received DM for {top_message.message.jump_url}")
 
             # break  # TODO: remove
         except Exception:
