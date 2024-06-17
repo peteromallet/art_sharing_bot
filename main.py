@@ -141,6 +141,7 @@ async def execute_at_9_pm_utc():
 async def on_ready():
     try:
         print(f'Logged in as {bot.user}')
+        await handle_report_log_interaction(bot=bot, message=f"{bot.user.global_name} has started up!")
         await bot.tree.sync()
 
         if os.path.exists('./database.db'):
