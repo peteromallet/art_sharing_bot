@@ -22,10 +22,13 @@ async def handle_get_top_valid_messages_with_attachments_and_reactions(bot: comm
 
 
 async def handle_display_top_posts_interaction(bot: commands.Bot, top_messages: list[MessageWithReactionCount]) -> None:
+    if len(top_messages) == 0:
+        return
+
     art_sharing_channel = bot.get_channel(ART_SHARING_CHANNEL)
+    project_art_sharing_channel = bot.get_channel(PROJECT_ART_SHARING_CHANNEL)
 
     # post updates to project_art_sharing_channel
-    project_art_sharing_channel = bot.get_channel(PROJECT_ART_SHARING_CHANNEL)
     title_message = f"# Here are the top {len(top_messages)} most reacted posts from {art_sharing_channel.jump_url} for today."
     await project_art_sharing_channel.send(title_message)
 
