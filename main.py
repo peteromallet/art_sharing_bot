@@ -21,7 +21,7 @@ from services.post_to_twitter import post_to_twitter
 from schemas.user import User
 from schemas.post import Post
 
-from constants import GUILD_ID
+from constants import GUILD_ID, MIN_REACTION_COUNT_TO_DISPLAY_IN_ART_UPDATES, MIN_REACTION_COUNT_TO_DISPLAY_IN_SOCIAL_MEDIA
 
 load_dotenv()
 
@@ -40,11 +40,11 @@ bot = commands.Bot(command_prefix='/', intents=intents)
 # @tasks.loop(time=datetime.now(timezone.utc).replace(hour=18, minute=30, second=0, microsecond=0).time())
 @tasks.loop(time=datetime.now(timezone.utc).replace(hour=20, minute=0, second=0, microsecond=0).time())
 async def execute_at_8_pm_utc():
-    top_6_messages: list[MessageWithReactionCount] = await handle_get_top_valid_messages_with_attachments_and_reactions(bot=bot, top_n=6, min_reaction_count=7)
+    top_6_messages: list[MessageWithReactionCount] = await handle_get_top_valid_messages_with_attachments_and_reactions(bot=bot, top_n=6, min_reaction_count=MIN_REACTION_COUNT_TO_DISPLAY_IN_ART_UPDATES)
 
     # TODO: post top posts to discord
     await handle_display_top_posts_interaction(bot=bot, top_messages=top_6_messages)
-    await handle_report_log_interaction(bot=bot, message=f"{len(top_6_messages)} posts were posted to discord (Top 6)")
+    await handle_report_log_interaction(bot=bot, message=f"{len(top_6_messages)} posts were posted to art_sharing (Top 6, minimum {MIN_REACTION_COUNT_TO_DISPLAY_IN_ART_UPDATES} reactions)")
 
     db_session = get_db_session()
 
@@ -76,8 +76,8 @@ async def execute_at_8_pm_utc():
 @tasks.loop(time=datetime.now(timezone.utc).replace(hour=21, minute=0, second=0, microsecond=0).time())
 async def execute_at_9_pm_utc():
 
-    top_4_messages: list[MessageWithReactionCount] = await handle_get_top_valid_messages_with_attachments_and_reactions(bot=bot, top_n=4, min_reaction_count=10)
-    await handle_report_log_interaction(bot=bot, message=f"{len(top_4_messages)} posts will be posted to social media (Top 4)")
+    top_4_messages: list[MessageWithReactionCount] = await handle_get_top_valid_messages_with_attachments_and_reactions(bot=bot, top_n=4, min_reaction_count=MIN_REACTION_COUNT_TO_DISPLAY_IN_SOCIAL_MEDIA)
+    await handle_report_log_interaction(bot=bot, message=f"{len(top_4_messages)} posts will be posted to social media (Top 4, minimum {MIN_REACTION_COUNT_TO_DISPLAY_IN_SOCIAL_MEDIA} reactions)")
 
     db_session = get_db_session()
 
