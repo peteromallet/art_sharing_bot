@@ -6,13 +6,13 @@ from shared.utils import replace_user_mentions_with_usernames, ensure_blockquote
 from constants import ART_SHARING_CHANNEL, PROJECT_ART_SHARING_CHANNEL
 
 
-async def handle_get_top_valid_messages_with_attachments_and_reactions(bot: commands.Bot, top_n: int) -> list[MessageWithReactionCount]:
+async def handle_get_top_valid_messages_with_attachments_and_reactions(bot: commands.Bot, top_n: int, min_reaction_count: int) -> list[MessageWithReactionCount]:
     # Get all messages from #art_sharing in the past 24 hours (9pm UTC yesterday to 9pm UTC today)
     art_sharing_channel = bot.get_channel(ART_SHARING_CHANNEL)
     messages = await get_channel_messages_past_24_hours(art_sharing_channel)
-    valid_messages_with_attachments_and_reactions: list[MessageWithReactionCount] = await get_messages_with_attachments_and_reactions(messages)
+    valid_messages_with_attachments_and_reactions: list[MessageWithReactionCount] = await get_messages_with_attachments_and_reactions(messages=messages, min_reaction_count=min_reaction_count)
     top_messages = get_messages_with_most_reactions(
-        valid_messages_with_attachments_and_reactions, top_n=top_n)  # top N
+        messages_with_reaction_counts=valid_messages_with_attachments_and_reactions, top_n=top_n)  # top N
 
     for top_message in top_messages:
         top_message.message.content = replace_user_mentions_with_usernames(

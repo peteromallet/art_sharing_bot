@@ -56,7 +56,7 @@ def get_messages_with_most_reactions(messages_with_reaction_counts: list[Message
     return top_messages
 
 
-async def get_messages_with_attachments_and_reactions(messages: list[discord.Message]) -> list[MessageWithReactionCount]:
+async def get_messages_with_attachments_and_reactions(messages: list[discord.Message], min_reaction_count: int = 1) -> list[MessageWithReactionCount]:
     valid_messages_with_reaction_count: list[MessageWithReactionCount] = []
 
     for message in messages:
@@ -67,8 +67,8 @@ async def get_messages_with_attachments_and_reactions(messages: list[discord.Mes
             if attachment.filename.lower().endswith(('.mp4', '.mov', '.wmv', '.avi', '.gif', '.webm', '.mkv')):
                 unique_reactors_count = await get_unique_reactors_count(message)
 
-                # Ensure the number of unique reactors is greater than 4
-                if unique_reactors_count > 4:
+                # Ensure the number of unique reactors is greater than threshold
+                if unique_reactors_count >= min_reaction_count:
                     valid_messages_with_reaction_count.append(MessageWithReactionCount(
                         message=message, unique_reactions_count=unique_reactors_count))
 
