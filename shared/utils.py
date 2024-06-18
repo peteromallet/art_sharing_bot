@@ -100,13 +100,16 @@ def create_post_caption(user_details: User, comment: str, platform: SocialMedia)
     if platform == SocialMedia.TWITTER:
         if user_details.twitter is not None:
             user_twitter = user_details.twitter
-            caption += f" {'@' if user_twitter[0] != '@' else ''}{user_twitter}"
+            if user_twitter.startswith('http'):
+                caption += f" {user_twitter}"
+            else:
+                caption += f" {'@' if user_twitter[0] != '@' else ''}{user_twitter}"
         else:
             caption += f" {user_details.name}"
 
     if comment and len(comment) > 0:
         # max length of twitter caption is 280, must accommodate for 3 lines of text
-        caption += f"\n\nArtist Comment: {truncate_with_ellipsis(comment, 200)}"
+        caption += f"\n\nArtist Comment: \"{truncate_with_ellipsis(comment, 200)}\""
 
     if user_details.website is not None:
         caption += f"\n\nYou can find their website here: {user_details.website}"

@@ -19,11 +19,11 @@ def format_msg(user_details: User) -> str:
 class UpdateDetailsModal(discord.ui.Modal, title='Update personal details'):
     nameInput = discord.ui.TextInput(label='Name', required=True)
     twitterInput = discord.ui.TextInput(
-        label='Twitter handle', required=False, placeholder='@twitter_handle')
+        label='Twitter handle (e.g @john_doe)', required=False, placeholder='@twitter_handle')
     instagramInput = discord.ui.TextInput(
-        label='Instagram handle', required=False, placeholder='@instagram_handle')
+        label='Instagram handle (e.g @john_doe)', required=False, placeholder='@instagram_handle')
     youtubeInput = discord.ui.TextInput(
-        label='Youtube handle', required=False, placeholder='@youtube_handle')
+        label='Youtube handle (e.g @john_doe)', required=False, placeholder='@youtube_handle')
     websiteInput = discord.ui.TextInput(
         label='Website', required=False, placeholder='https://website.com')
 
