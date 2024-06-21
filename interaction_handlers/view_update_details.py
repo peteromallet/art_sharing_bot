@@ -67,6 +67,9 @@ class ViewUpdateDetailsView(discord.ui.View):
         self.children[1].style = discord.ButtonStyle.secondary if self.user_details.dm_notifications else discord.ButtonStyle.green
         self.bot = bot
 
+        if not self.user_details.featured:  # hide notification button if not featured
+            self.remove_item(self.children[1])
+
     @discord.ui.button(label="Edit Details", style=discord.ButtonStyle.blurple, emoji="📝")
     async def open_details_modal(self, interaction: discord.Interaction, _):
         updateDetailsModal = UpdateDetailsModal(
