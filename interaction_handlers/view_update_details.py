@@ -10,9 +10,9 @@ from .logging import handle_report_log_interaction
 def format_msg(user_details: User) -> str:
     msg = f"## Your current details are as follows:\n\n{convert_user_to_markdown(user_details)}\n\n_Please click the buttons below if you'd like to update your details,"
     if user_details.dm_notifications:
-        msg += " turn off notifications"
+        msg += " disable notifications"
     else:
-        msg += " turn on notifications"
+        msg += " enable notifications"
     if user_details.featured:
         msg += " or not be featured_"
     else:
@@ -61,10 +61,10 @@ class ViewUpdateDetailsView(discord.ui.View):
         super().__init__()
         self.timeout = None
         self.user_details = user_details
-        self.children[1].label = "Stop being featured" if self.user_details.featured else "Allow to be featured"
-        self.children[1].style = discord.ButtonStyle.red if self.user_details.featured else discord.ButtonStyle.green
-        self.children[2].label = "Disable notifications" if self.user_details.dm_notifications else "Enable notifications"
-        self.children[2].style = discord.ButtonStyle.secondary if self.user_details.dm_notifications else discord.ButtonStyle.green
+        self.children[2].label = "Stop being featured" if self.user_details.featured else "Allow to be featured"
+        self.children[2].style = discord.ButtonStyle.red if self.user_details.featured else discord.ButtonStyle.green
+        self.children[1].label = "Disable notifications" if self.user_details.dm_notifications else "Enable notifications"
+        self.children[1].style = discord.ButtonStyle.secondary if self.user_details.dm_notifications else discord.ButtonStyle.green
         self.bot = bot
 
     @discord.ui.button(label="Edit Details", style=discord.ButtonStyle.blurple, emoji="📝")
@@ -72,19 +72,6 @@ class ViewUpdateDetailsView(discord.ui.View):
         updateDetailsModal = UpdateDetailsModal(
             user_details=self.user_details, bot=self.bot)
         await interaction.response.send_modal(updateDetailsModal)
-
-    @discord.ui.button(emoji="✨")
-    async def edit_featuring(self, interaction: discord.Interaction, _):
-        new_user = User(id=self.user_details.id, name=self.user_details.name, twitter=self.user_details.twitter,
-                        instagram=self.user_details.instagram, youtube=self.user_details.youtube, website=self.user_details.website, dm_notifications=self.user_details.dm_notifications, featured=not self.user_details.featured)  # toggle featured
-
-        # update database with new details
-        self.user_details = await handle_update_details(new_user=new_user)
-
-        myView = ViewUpdateDetailsView(
-            user_details=self.user_details, bot=self.bot)
-        await interaction.response.edit_message(content=format_msg(self.user_details), view=myView)
-        await handle_report_log_interaction(bot=self.bot, message=f"{interaction.user.global_name} updated featuring to {self.user_details.featured}")
 
     @discord.ui.button(emoji="🔔")
     async def edit_notification(self, interaction: discord.Interaction, _):
@@ -98,6 +85,19 @@ class ViewUpdateDetailsView(discord.ui.View):
             user_details=self.user_details, bot=self.bot)
         await interaction.response.edit_message(content=format_msg(self.user_details), view=myView)
         await handle_report_log_interaction(bot=self.bot, message=f"{interaction.user.global_name} updated notification to {self.user_details.dm_notifications}")
+
+    @discord.ui.button(emoji="✨")
+    async def edit_featuring(self, interaction: discord.Interaction, _):
+        new_user = User(id=self.user_details.id, name=self.user_details.name, twitter=self.user_details.twitter,
+                        instagram=self.user_details.instagram, youtube=self.user_details.youtube, website=self.user_details.website, dm_notifications=self.user_details.dm_notifications, featured=not self.user_details.featured)  # toggle featured
+
+        # update database with new details
+        self.user_details = await handle_update_details(new_user=new_user)
+
+        myView = ViewUpdateDetailsView(
+            user_details=self.user_details, bot=self.bot)
+        await interaction.response.edit_message(content=format_msg(self.user_details), view=myView)
+        await handle_report_log_interaction(bot=self.bot, message=f"{interaction.user.global_name} updated featuring to {self.user_details.featured}")
 
 
 async def handle_view_update_details_interaction(bot: commands.Bot, interaction: discord.Interaction):
