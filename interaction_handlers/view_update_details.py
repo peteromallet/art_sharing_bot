@@ -83,7 +83,7 @@ class ViewUpdateDetailsView(discord.ui.View):
 
         myView = ViewUpdateDetailsView(
             user_details=self.user_details, bot=self.bot)
-        await interaction.response.edit_message(content=format_msg(self.user_details), view=myView)
+        await interaction.response.edit_message(content=format_msg(self.user_details), view=myView, delete_after=60)
         await handle_report_log_interaction(bot=self.bot, message=f"{interaction.user.global_name} updated notification to {self.user_details.dm_notifications}")
 
     @discord.ui.button(emoji="✨")
@@ -96,7 +96,7 @@ class ViewUpdateDetailsView(discord.ui.View):
 
         myView = ViewUpdateDetailsView(
             user_details=self.user_details, bot=self.bot)
-        await interaction.response.edit_message(content=format_msg(self.user_details), view=myView)
+        await interaction.response.edit_message(content=format_msg(self.user_details), view=myView, delete_after=60)
         await handle_report_log_interaction(bot=self.bot, message=f"{interaction.user.global_name} updated featuring to {self.user_details.featured}")
 
 

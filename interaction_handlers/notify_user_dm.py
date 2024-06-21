@@ -23,10 +23,16 @@ class DataSharer():
 
 
 def format_msg(dataSharer: DataSharer) -> str:
-    if dataSharer.user_details.featured:
-        msg = f"## Your art may be featured on Banodoco's social channels today: {dataSharer.jump_url}\n\nYour current details are as follows:\n\n{convert_user_to_markdown(dataSharer.user_details)}\n**Comment:** {dataSharer.comment}\n\n_Please click the buttons below if you'd like to update your details or not be featured_"
+    msg = f"## Your art may be featured on Banodoco's social channels today: {dataSharer.jump_url}\n\nYour current details are as follows:\n\n{convert_user_to_markdown(dataSharer.user_details)}\n**Comment:** {dataSharer.comment}\n\n_Please click the buttons below if you'd like to update your details,"
+
+    if dataSharer.user_details.dm_notifications:
+        msg += " disable notifications"
     else:
-        msg = f"## Your art may be featured on Banodoco's social channels today: {dataSharer.jump_url}\n\nYour current details are as follows:\n\n{convert_user_to_markdown(dataSharer.user_details)}\n**Comment:** {dataSharer.comment}\n\n_Please click the buttons below if you'd like to update your details or be featured again_"
+        msg += " enable notifications"
+    if dataSharer.user_details.featured:
+        msg += " or not be featured_"
+    else:
+        msg += " or be featured again_"
 
     return msg
 
@@ -82,7 +88,7 @@ class UpdateDetailsModal(discord.ui.Modal, title='Update personal details'):
 
     async def on_submit(self, interaction: discord.Interaction):
         new_user = User(id=self.dataSharer.user_details.id, name=self.nameInput.value, twitter=self.twitterInput.value or None,
-                        instagram=self.instagramInput.value or None, youtube=self.youtubeInput.value or None, website=self.websiteInput.value or None, featured=self.dataSharer.user_details.featured)
+                        instagram=self.instagramInput.value or None, youtube=self.youtubeInput.value or None, website=self.websiteInput.value or None, featured=self.dataSharer.user_details.featured, dm_notifications=self.dataSharer.user_details.dm_notifications)
         # update database with new details
         new_user_details = await handle_update_details(new_user=new_user)
         self.dataSharer.user_details = new_user_details
@@ -104,24 +110,48 @@ class MyView(discord.ui.View):
         self.timeout = None
         self.dataSharer = dataSharer
         self.user_details = self.dataSharer.user_details
-        self.children[2].label = "Stop being featured" if self.dataSharer.user_details.featured else "Allow to be featured"
-        self.children[2].style = discord.ButtonStyle.red if self.dataSharer.user_details.featured else discord.ButtonStyle.green
+        self.children[3].label = "Stop being featured" if self.user_details.featured else "Allow to be featured"
+        self.children[3].style = discord.ButtonStyle.red if self.user_details.featured else discord.ButtonStyle.green
+        self.children[2].label = "Disable notifications" if self.user_details.dm_notifications else "Enable notifications"
+        self.children[2].style = discord.ButtonStyle.secondary if self.user_details.dm_notifications else discord.ButtonStyle.green
+
         self.bot = self.dataSharer.bot
 
-    @discord.ui.button(label="Edit Comment", style=discord.ButtonStyle.grey)
+        if not self.dataSharer.user_details.featured:  # hide notification button if not featured
+            self.remove_item(self.children[2])
+
+    @discord.ui.button(label="Edit Comment", style=discord.ButtonStyle.blurple, emoji="💬")
     async def open_comment_modal(self, interaction: discord.Interaction, _):
         updateCommentModal = UpdateCommentModal(self.dataSharer)
         await interaction.response.send_modal(updateCommentModal)
 
-    @discord.ui.button(label="Edit Details", style=discord.ButtonStyle.blurple)
+    @discord.ui.button(label="Edit Details", style=discord.ButtonStyle.blurple, emoji="📝")
     async def open_details_modal(self, interaction: discord.Interaction, _):
         updateDetailsModal = UpdateDetailsModal(self.dataSharer)
         await interaction.response.send_modal(updateDetailsModal)
 
-    @discord.ui.button()
+    @discord.ui.button(emoji="🔔")
+    async def edit_notification(self, interaction: discord.Interaction, _):
+        new_user = User(id=self.user_details.id, name=self.user_details.name, twitter=self.user_details.twitter,
+                        instagram=self.user_details.instagram, youtube=self.user_details.youtube, website=self.user_details.website, featured=self.user_details.featured, dm_notifications=not self.user_details.dm_notifications)  # toggle notification
+
+        # update database with new details
+        self.dataSharer.user_details = await handle_update_details(new_user=new_user)
+
+        # set updated comment, if any
+        if os.path.exists(self.dataSharer.file_save_path):
+            with open(self.dataSharer.file_save_path, 'r', encoding='utf-8') as file:
+                edited_comment = file.read()
+                self.dataSharer.comment = edited_comment
+
+        myView = MyView(dataSharer=self.dataSharer)
+        await interaction.response.edit_message(content=format_msg(self.dataSharer), view=myView, delete_after=3600)
+        await handle_report_log_interaction(bot=self.bot, message=f"{interaction.user.global_name} updated notification to {self.user_details.dm_notifications} for {self.dataSharer.jump_url} via DM")
+
+    @discord.ui.button(emoji="✨")
     async def edit_featuring(self, interaction: discord.Interaction, _):
         new_user = User(id=self.dataSharer.user_details.id, name=self.user_details.name, twitter=self.user_details.twitter,
-                        instagram=self.user_details.instagram, youtube=self.user_details.youtube, website=self.user_details.website, featured=not self.dataSharer.user_details.featured)
+                        instagram=self.user_details.instagram, youtube=self.user_details.youtube, website=self.user_details.website, dm_notifications=self.dataSharer.user_details.dm_notifications, featured=not self.dataSharer.user_details.featured)  # toggle featured
         # update database with new details
         self.dataSharer.user_details = await handle_update_details(new_user=new_user)
 
