@@ -15,6 +15,7 @@ class SocialMediaPost():
     caption: str
     attachment_url: str
     attachment_name: str
+    post_jump_url: str
 
 
 class SocialMedia(Enum):

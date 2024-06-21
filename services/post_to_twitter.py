@@ -31,6 +31,7 @@ async def post_to_twitter(social_media_post: SocialMediaPost) -> None:
     media = await loop.run_in_executor(None,
                                        lambda: api_v1.media_upload(file_save_path))
     media_id = media.media_id_string
+    print(f"Media ID: {media_id}")
 
     # Initialize Tweepy for v2 API
     client = tweepy.Client(consumer_key=CONSUMER_KEY,

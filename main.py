@@ -57,13 +57,16 @@ async def execute_at_8_pm_utc():
             if not user_details:
                 # user hasn't updated their details, so we add it to the database
                 new_user = User(id=user_id,
-                                name=top_message.message.author.global_name, featured=True)
+                                name=top_message.message.author.global_name, featured=True, dm_notifications=True)
                 user_details = await handle_update_details(new_user=new_user)
 
             # check if user wants to be featured
             if user_details.featured:
-                await handle_notify_user_interaction(bot=bot, message=top_message.message, user_details=user_details)
-                await handle_report_log_interaction(bot=bot, message=f"{top_message.message.author.global_name} received DM for {top_message.message.jump_url}")
+                if user_details.dm_notifications:
+                    await handle_notify_user_interaction(bot=bot, message=top_message.message, user_details=user_details)
+                    await handle_report_log_interaction(bot=bot, message=f"{user_details.name} received DM for {top_message.message.jump_url}")
+                else:
+                    await handle_report_log_interaction(bot=bot, message=f"{user_details.name} did not receive DM for {top_message.message.jump_url} (Notifications disabled)")
 
             # break  # TODO: remove
         except Exception:
@@ -119,7 +122,7 @@ async def execute_at_9_pm_utc():
                 post_caption = create_post_caption(
                     comment=comment, platform=SocialMedia.TWITTER, user_details=user_details)
                 social_media_post = SocialMediaPost(
-                    post_id=top_message.message.id, attachment_url=top_message.message.attachments[0].url, caption=post_caption, attachment_name=top_message.message.attachments[0].filename)
+                    post_id=top_message.message.id, attachment_url=top_message.message.attachments[0].url, caption=post_caption, attachment_name=top_message.message.attachments[0].filename, post_jump_url=top_message.message.jump_url)
                 social_media_posts.append(social_media_post)
 
             # break  # TODO: remove
@@ -130,7 +133,7 @@ async def execute_at_9_pm_utc():
     for social_media_post in social_media_posts:
         try:
             await post_to_twitter(social_media_post)
-            await handle_report_log_interaction(bot=bot, message=f"Posted post with id {social_media_post.post_id} to Twitter")
+            await handle_report_log_interaction(bot=bot, message=f"Posted {social_media_post.post_jump_url} to Twitter")
 
             await asyncio.sleep(15*60)
         except Exception:
