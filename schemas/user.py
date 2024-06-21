@@ -18,6 +18,8 @@ class User(Base):
         default=None, nullable=True)
     website: Mapped[Optional[str]] = mapped_column(default=None, nullable=True)
     featured: Mapped[bool] = mapped_column(default=True, nullable=False)
+    dm_notifications: Mapped[bool] = mapped_column(
+        default=True, nullable=False)
     created_at: Mapped[Optional[datetime]
                        ] = mapped_column(default=func.now())
     updated_at: Mapped[Optional[datetime]
