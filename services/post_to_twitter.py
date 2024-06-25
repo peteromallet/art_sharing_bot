@@ -20,6 +20,8 @@ async def post_to_twitter(social_media_post: SocialMediaPost) -> None:
         'temp', social_media_post.attachment_name)
     await download_file(social_media_post.attachment_url, file_save_path)
 
+    file_extension = os.path.splitext(social_media_post.attachment_name)[1]
+
     # Initialize Tweepy for v1.1 API
     auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
     auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
@@ -28,8 +30,13 @@ async def post_to_twitter(social_media_post: SocialMediaPost) -> None:
     loop = asyncio.get_event_loop()
 
     # Upload the media file using v1.1 API in a separate thread
-    media = await loop.run_in_executor(None,
-                                       lambda: api_v1.media_upload(file_save_path))
+    if file_extension == '.gif':
+        media = await loop.run_in_executor(None,
+                                           lambda: api_v1.media_upload(file_save_path, chunked=True, media_category="tweet_gif"))  # use chunking
+    else:
+        media = await loop.run_in_executor(None,
+                                           lambda: api_v1.media_upload(file_save_path))
+
     media_id = media.media_id_string
     print(f"Media ID: {media_id}")
 
