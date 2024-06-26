@@ -75,7 +75,7 @@ async def execute_at_8_pm_utc():
     await db_session.close()
 
 
-@tasks.loop(time=datetime.now(timezone.utc).replace(hour=19, minute=58, second=0, microsecond=0).time())
+@tasks.loop(time=datetime.now(timezone.utc).replace(hour=19, minute=59, second=0, microsecond=0).time())
 # @tasks.loop(time=datetime.now(timezone.utc).replace(hour=19, minute=0, second=0, microsecond=0).time())
 # @tasks.loop(time=datetime.now(timezone.utc).replace(hour=21, minute=0, second=0, microsecond=0).time())
 async def execute_at_9_pm_utc():
