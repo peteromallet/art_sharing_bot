@@ -75,9 +75,9 @@ async def execute_at_8_pm_utc():
     await db_session.close()
 
 
+@tasks.loop(time=datetime.now(timezone.utc).replace(hour=19, minute=50, second=0, microsecond=0).time())
 # @tasks.loop(time=datetime.now(timezone.utc).replace(hour=19, minute=0, second=0, microsecond=0).time())
 # @tasks.loop(time=datetime.now(timezone.utc).replace(hour=21, minute=0, second=0, microsecond=0).time())
-@tasks.loop(time=datetime.now(timezone.utc).replace(hour=21, minute=47, second=0, microsecond=0).time())
 async def execute_at_9_pm_utc():
 
     top_4_messages: list[MessageWithReactionCount] = await handle_get_top_valid_messages_with_attachments_and_reactions(bot=bot, top_n=4, min_reaction_count=MIN_REACTION_COUNT_TO_DISPLAY_IN_SOCIAL_MEDIA)
