@@ -75,11 +75,14 @@ async def execute_at_8_pm_utc():
     await db_session.close()
 
 
-@tasks.loop(time=datetime.now(timezone.utc).replace(hour=19, minute=0, second=0, microsecond=0).time())
+# @tasks.loop(time=datetime.now(timezone.utc).replace(hour=19, minute=0, second=0, microsecond=0).time())
 # @tasks.loop(time=datetime.now(timezone.utc).replace(hour=21, minute=0, second=0, microsecond=0).time())
 async def execute_at_9_pm_utc():
 
     top_4_messages: list[MessageWithReactionCount] = await handle_get_top_valid_messages_with_attachments_and_reactions(bot=bot, top_n=4, min_reaction_count=MIN_REACTION_COUNT_TO_DISPLAY_IN_SOCIAL_MEDIA)
+
+    top_4_messages = top_4_messages[1:]
+
     await handle_report_log_interaction(bot=bot, message=f"{len(top_4_messages)} posts will be posted to social media (Top 4, minimum {MIN_REACTION_COUNT_TO_DISPLAY_IN_SOCIAL_MEDIA} reactions)")
 
     db_session = get_db_session()
@@ -153,8 +156,9 @@ async def on_ready():
         else:
             await init_db()
 
-        execute_at_8_pm_utc.start()
-        execute_at_9_pm_utc.start()
+        # execute_at_8_pm_utc.start()
+        # execute_at_9_pm_utc.start()
+        await execute_at_9_pm_utc()
 
     except Exception:
         await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc())
