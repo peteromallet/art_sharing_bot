@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from shared.models import MessageWithReactionCount, SocialMedia
 from schemas.user import User
 import aiohttp
+import subprocess
 
 
 async def get_channel_messages_past_24_hours(channel: discord.TextChannel) -> list[discord.Message]:
@@ -77,7 +78,7 @@ async def get_messages_with_attachments_and_reactions(messages: list[discord.Mes
 
 def convert_user_to_markdown(user: User) -> str:
 
-    return f"**Name:** {user.name}\n**Youtube handle:** {user.youtube or ''}\n**Twitter handle:** {user.twitter or ''}\n**Instagram handle:** {user.instagram or ''}\n**Website:** {user.website or ''}\n**DM Notifications:** {user.dm_notifications}\n**Okay To Feature:** {user.featured}"
+    return f"**Name:** {user.name}\n**Youtube handle:** {user.youtube or ''}\n**Twitter handle:** {user.twitter or ''}\n**Instagram handle:** {user.instagram or ''}\n**Tiktok handle:** {user.tiktok or ''}\n**Website:** {user.website or ''}\n**DM Notifications:** {user.dm_notifications}\n**Okay To Feature:** {user.featured}"
 
 
 async def download_file(url, filename):
@@ -115,3 +116,8 @@ def create_post_caption(user_details: User, comment: str, platform: SocialMedia)
         caption += f"\n\nYou can find their website here: {user_details.website}"
 
     return caption
+
+
+def convert_gif_to_mp4(gif_local_path: str, mp4_save_path: str) -> None:
+    subprocess.run(
+        f"ffmpeg -loglevel error -y -i {gif_local_path} -c:v libx264 -preset slow -crf 18 {mp4_save_path}", shell=True)

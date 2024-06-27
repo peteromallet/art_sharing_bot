@@ -16,6 +16,8 @@ class User(Base):
     twitter: Mapped[Optional[str]] = mapped_column(default=None, nullable=True)
     instagram: Mapped[Optional[str]] = mapped_column(
         default=None, nullable=True)
+    tiktok: Mapped[Optional[str]] = mapped_column(
+        default=None, nullable=True)
     website: Mapped[Optional[str]] = mapped_column(default=None, nullable=True)
     featured: Mapped[bool] = mapped_column(default=True, nullable=False)
     dm_notifications: Mapped[bool] = mapped_column(

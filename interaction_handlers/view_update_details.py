@@ -22,13 +22,15 @@ def format_msg(user_details: User) -> str:
 
 
 class UpdateDetailsModal(discord.ui.Modal, title='Update personal details'):
-    nameInput = discord.ui.TextInput(label='Name', required=True)
+    # nameInput = discord.ui.TextInput(label='Name', required=True)
     twitterInput = discord.ui.TextInput(
         label='Twitter handle (e.g @john_doe)', required=False, placeholder='@twitter_handle')
     instagramInput = discord.ui.TextInput(
         label='Instagram handle (e.g @john_doe)', required=False, placeholder='@instagram_handle')
     youtubeInput = discord.ui.TextInput(
         label='Youtube handle (e.g @john_doe)', required=False, placeholder='@youtube_handle')
+    tiktokInput = discord.ui.TextInput(
+        label='Tiktok handle (e.g @john_doe)', required=False, placeholder='@tiktok_handle')
     websiteInput = discord.ui.TextInput(
         label='Website', required=False, placeholder='https://website.com')
 
@@ -36,17 +38,18 @@ class UpdateDetailsModal(discord.ui.Modal, title='Update personal details'):
         super().__init__()
         self.user_details = user_details
         # set default values
-        self.nameInput.default = self.user_details.name
         self.twitterInput.default = self.user_details.twitter
         self.instagramInput.default = self.user_details.instagram
         self.youtubeInput.default = self.user_details.youtube
+        self.tiktokInput.default = self.user_details.tiktok
         self.websiteInput.default = self.user_details.website
         self.bot = bot
 
     async def on_submit(self, interaction: discord.Interaction):
         # update database with new details
-        new_user_details = User(id=self.user_details.id, name=self.nameInput.value, twitter=self.twitterInput.value or None, youtube=self.youtubeInput.value or None,
-                                instagram=self.instagramInput.value or None, website=self.websiteInput.value or None, featured=self.user_details.featured, dm_notifications=self.user_details.dm_notifications)
+        # use current discord global name as name due to space constraints on modal
+        new_user_details = User(id=self.user_details.id, name=interaction.user.global_name, twitter=self.twitterInput.value or None, youtube=self.youtubeInput.value or None,
+                                instagram=self.instagramInput.value or None, tiktok=self.tiktokInput.value or None, website=self.websiteInput.value or None, featured=self.user_details.featured, dm_notifications=self.user_details.dm_notifications)
 
         new_user_details = await handle_update_details(new_user=new_user_details)
 
@@ -79,7 +82,7 @@ class ViewUpdateDetailsView(discord.ui.View):
     @discord.ui.button(emoji="🔔")
     async def edit_notification(self, interaction: discord.Interaction, _):
         new_user = User(id=self.user_details.id, name=self.user_details.name, twitter=self.user_details.twitter,
-                        instagram=self.user_details.instagram, youtube=self.user_details.youtube, website=self.user_details.website, featured=self.user_details.featured, dm_notifications=not self.user_details.dm_notifications)  # toggle notification
+                        instagram=self.user_details.instagram, youtube=self.user_details.youtube, tiktok=self.user_details.tiktok, website=self.user_details.website, featured=self.user_details.featured, dm_notifications=not self.user_details.dm_notifications)  # toggle notification
 
         # update database with new details
         self.user_details = await handle_update_details(new_user=new_user)
@@ -92,7 +95,7 @@ class ViewUpdateDetailsView(discord.ui.View):
     @discord.ui.button(emoji="✨")
     async def edit_featuring(self, interaction: discord.Interaction, _):
         new_user = User(id=self.user_details.id, name=self.user_details.name, twitter=self.user_details.twitter,
-                        instagram=self.user_details.instagram, youtube=self.user_details.youtube, website=self.user_details.website, dm_notifications=self.user_details.dm_notifications, featured=not self.user_details.featured)  # toggle featured
+                        instagram=self.user_details.instagram, youtube=self.user_details.youtube, tiktok=self.user_details.tiktok, website=self.user_details.website, dm_notifications=self.user_details.dm_notifications, featured=not self.user_details.featured)  # toggle featured
 
         # update database with new details
         self.user_details = await handle_update_details(new_user=new_user)
