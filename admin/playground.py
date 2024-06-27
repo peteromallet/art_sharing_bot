@@ -2,7 +2,7 @@ import sqlite3
 con = sqlite3.connect("database.db")
 cur = con.cursor()
 
-query = "ALTER TABLE users ADD COLUMN dm_notifications INTEGER DEFAULT 1;"
+query = "ALTER TABLE users ADD COLUMN tiktok VARCHAR DEFAULT NULL;"
 res = cur.execute(query)
 
 con.commit()

@@ -63,6 +63,8 @@ async def execute_at_8_pm_utc():
             # check if user wants to be featured
             if user_details.featured:
                 if user_details.dm_notifications:
+                    # set name to current discord name because users can't edit name afterwards due to missing space in modal
+                    user_details.name = top_message.message.author.global_name
                     await handle_notify_user_interaction(bot=bot, message=top_message.message, user_details=user_details)
                     await handle_report_log_interaction(bot=bot, message=f"{user_details.name} received DM for {top_message.message.jump_url}")
                 else:

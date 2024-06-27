@@ -66,13 +66,15 @@ class UpdateCommentModal(discord.ui.Modal, title='Update comment'):
 
 
 class UpdateDetailsModal(discord.ui.Modal, title='Update personal details'):
-    nameInput = discord.ui.TextInput(label='Name', required=True)
+    # nameInput = discord.ui.TextInput(label='Name', required=True)
     twitterInput = discord.ui.TextInput(
         label='Twitter handle (e.g @john_doe)', required=False, placeholder='@twitter_handle')
     instagramInput = discord.ui.TextInput(
         label='Instagram handle (e.g @john_doe)', required=False, placeholder='@instagram_handle')
     youtubeInput = discord.ui.TextInput(
         label='Youtube handle (e.g @john_doe)', required=False, placeholder='@youtube_handle')
+    tiktokInput = discord.ui.TextInput(
+        label='Tiktok handle (e.g @john_doe)', required=False, placeholder='@tiktok_handle')
     websiteInput = discord.ui.TextInput(
         label='Website', required=False, placeholder='https://website.com')
 
@@ -80,15 +82,15 @@ class UpdateDetailsModal(discord.ui.Modal, title='Update personal details'):
         super().__init__()
         self.dataSharer = dataSharer
         # set default values
-        self.nameInput.default = self.dataSharer.user_details.name
         self.twitterInput.default = self.dataSharer.user_details.twitter
         self.instagramInput.default = self.dataSharer.user_details.instagram
         self.youtubeInput.default = self.dataSharer.user_details.youtube
+        self.tiktokInput.default = self.dataSharer.user_details.tiktok
         self.websiteInput.default = self.dataSharer.user_details.website
 
     async def on_submit(self, interaction: discord.Interaction):
-        new_user = User(id=self.dataSharer.user_details.id, name=self.nameInput.value, twitter=self.twitterInput.value or None,
-                        instagram=self.instagramInput.value or None, youtube=self.youtubeInput.value or None, website=self.websiteInput.value or None, featured=self.dataSharer.user_details.featured, dm_notifications=self.dataSharer.user_details.dm_notifications)
+        new_user = User(id=self.dataSharer.user_details.id, name=interaction.user.global_name, twitter=self.twitterInput.value or None,
+                        instagram=self.instagramInput.value or None, youtube=self.youtubeInput.value or None, tiktok=self.tiktokInput.value or None, website=self.websiteInput.value or None, featured=self.dataSharer.user_details.featured, dm_notifications=self.dataSharer.user_details.dm_notifications)
         # update database with new details
         new_user_details = await handle_update_details(new_user=new_user)
         self.dataSharer.user_details = new_user_details
@@ -132,8 +134,8 @@ class MyView(discord.ui.View):
 
     @discord.ui.button(emoji="🔔")
     async def edit_notification(self, interaction: discord.Interaction, _):
-        new_user = User(id=self.user_details.id, name=self.user_details.name, twitter=self.user_details.twitter,
-                        instagram=self.user_details.instagram, youtube=self.user_details.youtube, website=self.user_details.website, featured=self.user_details.featured, dm_notifications=not self.user_details.dm_notifications)  # toggle notification
+        new_user = User(id=self.user_details.id, name=interaction.user.global_name, twitter=self.user_details.twitter,
+                        instagram=self.user_details.instagram, youtube=self.user_details.youtube, tiktok=self.user_details.tiktok, website=self.user_details.website, featured=self.user_details.featured, dm_notifications=not self.user_details.dm_notifications)  # toggle notification
 
         # update database with new details
         self.dataSharer.user_details = await handle_update_details(new_user=new_user)
@@ -150,8 +152,8 @@ class MyView(discord.ui.View):
 
     @discord.ui.button(emoji="✨")
     async def edit_featuring(self, interaction: discord.Interaction, _):
-        new_user = User(id=self.dataSharer.user_details.id, name=self.user_details.name, twitter=self.user_details.twitter,
-                        instagram=self.user_details.instagram, youtube=self.user_details.youtube, website=self.user_details.website, dm_notifications=self.dataSharer.user_details.dm_notifications, featured=not self.dataSharer.user_details.featured)  # toggle featured
+        new_user = User(id=self.dataSharer.user_details.id, name=interaction.user.global_name, twitter=self.user_details.twitter,
+                        instagram=self.user_details.instagram, youtube=self.user_details.youtube, tiktok=self.user_details.tiktok, website=self.user_details.website, dm_notifications=self.dataSharer.user_details.dm_notifications, featured=not self.dataSharer.user_details.featured)  # toggle featured
         # update database with new details
         self.dataSharer.user_details = await handle_update_details(new_user=new_user)
 
@@ -177,6 +179,7 @@ async def handle_notify_user_interaction(bot: commands.Bot, message: discord.Mes
     myView = MyView(dataSharer)
 
     # user = await bot.fetch_user(user_details.id)  # TODO: use author.send
-    # delete after 1 hour
     # await user.send(format_msg(dataSharer), view=myView, delete_after=3600)
+
+    # delete after 1 hour
     await message.author.send(format_msg(dataSharer), view=myView, delete_after=3600)

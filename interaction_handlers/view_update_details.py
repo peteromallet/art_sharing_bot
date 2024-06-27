@@ -81,7 +81,7 @@ class ViewUpdateDetailsView(discord.ui.View):
 
     @discord.ui.button(emoji="🔔")
     async def edit_notification(self, interaction: discord.Interaction, _):
-        new_user = User(id=self.user_details.id, name=self.user_details.name, twitter=self.user_details.twitter,
+        new_user = User(id=self.user_details.id, name=interaction.user.global_name, twitter=self.user_details.twitter,
                         instagram=self.user_details.instagram, youtube=self.user_details.youtube, tiktok=self.user_details.tiktok, website=self.user_details.website, featured=self.user_details.featured, dm_notifications=not self.user_details.dm_notifications)  # toggle notification
 
         # update database with new details
@@ -94,7 +94,7 @@ class ViewUpdateDetailsView(discord.ui.View):
 
     @discord.ui.button(emoji="✨")
     async def edit_featuring(self, interaction: discord.Interaction, _):
-        new_user = User(id=self.user_details.id, name=self.user_details.name, twitter=self.user_details.twitter,
+        new_user = User(id=self.user_details.id, name=interaction.user.global_name, twitter=self.user_details.twitter,
                         instagram=self.user_details.instagram, youtube=self.user_details.youtube, tiktok=self.user_details.tiktok, website=self.user_details.website, dm_notifications=self.user_details.dm_notifications, featured=not self.user_details.featured)  # toggle featured
 
         # update database with new details
