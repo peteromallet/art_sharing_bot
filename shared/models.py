@@ -12,10 +12,15 @@ class MessageWithReactionCount():
 @dataclass
 class SocialMediaPost():
     post_id: int
-    caption: str
+    video_title_youtube: str
+    video_description_youtube: str
+    video_caption_tiktok: str
+    video_caption_instagram: str
+    caption_twitter: str
     attachment_url: str
     attachment_name: str
     post_jump_url: str
+    local_path: str
 
 
 class SocialMedia(Enum):

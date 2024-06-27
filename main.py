@@ -13,10 +13,11 @@ from interaction_handlers.logging import handle_report_errors_interaction, handl
 
 from shared.models import MessageWithReactionCount, SocialMediaPost, SocialMedia
 from shared.insert_or_update_user import handle_update_details
-from shared.utils import create_post_caption
+from shared.utils import create_post_caption, download_file, convert_gif_to_mp4
 
 from services.database import get_db_session, init_db
 from services.post_to_twitter import post_to_twitter
+from services.post_to_buffer import post_to_buffer
 
 from schemas.user import User
 from schemas.post import Post
@@ -122,10 +123,19 @@ async def execute_at_9_pm_utc():
                 await db_session.close()
 
                 # create social media post object
-                post_caption = create_post_caption(
+                twitter_caption = create_post_caption(
                     comment=comment, platform=SocialMedia.TWITTER, user_details=user_details)
+                instagram_video_caption = create_post_caption(
+                    comment=comment, platform=SocialMedia.INSTAGRAM, user_details=user_details)
+                tiktok_video_caption = create_post_caption(
+                    comment=comment, platform=SocialMedia.TIKTOK, user_details=user_details)
+                youtube_video_caption = create_post_caption(
+                    comment=comment, platform=SocialMedia.YOUTUBE, user_details=user_details)
+                youtube_video_title = f"Featured piece by {user_details.youtube or user_details.name}"
+
                 social_media_post = SocialMediaPost(
-                    post_id=top_message.message.id, attachment_url=top_message.message.attachments[0].url, caption=post_caption, attachment_name=top_message.message.attachments[0].filename, post_jump_url=top_message.message.jump_url)
+                    post_id=top_message.message.id, attachment_url=top_message.message.attachments[0].url, caption_twitter=twitter_caption, video_caption_instagram=instagram_video_caption, video_caption_tiktok=tiktok_video_caption, video_description_youtube=youtube_video_caption, video_title_youtube=youtube_video_title, attachment_name=top_message.message.attachments[0].filename, post_jump_url=top_message.message.jump_url, local_path=os.path.join(
+                        'temp', social_media_post.attachment_name))
                 social_media_posts.append(social_media_post)
 
             # break  # TODO: remove
@@ -135,10 +145,47 @@ async def execute_at_9_pm_utc():
     # TODO: schedule posts to social media, every 15 minutes
     for social_media_post in social_media_posts:
         try:
+            # download the attachment
+            await download_file(social_media_post.attachment_url, social_media_post.local_path)
 
-            await post_to_twitter(social_media_post)
-            await handle_report_log_interaction(bot=bot, message=f"Posted {social_media_post.post_jump_url} to Twitter")
+            file_extension = os.path.splitext(
+                social_media_post.attachment_name)[1]
 
+            # convert gif to mp4
+            # if file_extension == '.gif':
+            #     file_name = os.path.splitext(
+            #         social_media_post.attachment_name)[0]
+            #     mp4_local_path = os.path.join("temp", f"{file_name}.mp4")
+            #     await convert_gif_to_mp4(gif_local_path=social_media_post.local_path, mp4_local_path=mp4_local_path)
+            #     mp4_converted = True
+            #     await handle_report_log_interaction(bot=bot, message=f"Converted {social_media_post.post_jump_url} to mp4")
+
+            #     # upload mp4 to hf
+            #     social_media_post.attachment_url = upload_video_to_huggingface(
+            #         mp4_local_path)
+            #     # delete gif + update local path
+            #     os.remove(social_media_post.local_path)
+            #     social_media_post.local_path = mp4_local_path
+
+            # post to twitter
+            try:
+                await post_to_twitter(social_media_post)
+                await handle_report_log_interaction(bot=bot, message=f"Posted {social_media_post.post_jump_url} to Twitter")
+            except Exception:
+                await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc())
+
+            # post videos to buffer via zapier
+            try:
+                if file_extension != '.gif':
+                    await post_to_buffer(social_media_post=social_media_post)
+                    await handle_report_log_interaction(bot=bot, message=f"Posted {social_media_post.post_jump_url} to tiktok/youtube/instagram (hopefully)")
+            except Exception:
+                await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc())
+
+            # delete local file
+            os.remove(social_media_post.local_path)
+
+            # sleep 15 minutes
             await asyncio.sleep(15*60)
         except Exception:
             await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc())

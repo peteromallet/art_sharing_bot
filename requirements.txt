@@ -5,3 +5,4 @@ sqlalchemy
 aiosqlite
 aiohttp
 tweepy
+huggingface_hub

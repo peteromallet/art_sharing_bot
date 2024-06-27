@@ -108,9 +108,51 @@ def create_post_caption(user_details: User, comment: str, platform: SocialMedia)
         else:
             caption += f" {user_details.name}"
 
-    if comment and len(comment) > 0:
-        # max length of twitter caption is 280, must accommodate for 3 lines of text
-        caption += f"\n\nArtist Comment: \"{truncate_with_ellipsis(comment, 200)}\""
+        if comment and len(comment) > 0:
+            # max length of twitter caption is 280, must accommodate for 3 lines of text
+            caption += f"\n\nArtist Comment: \"{truncate_with_ellipsis(comment, 200)}\""
+
+    if platform == SocialMedia.INSTAGRAM:
+        if user_details.instagram is not None:
+            user_instagram = user_details.instagram
+            if user_instagram.startswith('http'):
+                caption += f" {user_instagram}"
+            else:
+                caption += f" {'@' if user_instagram[0] != '@' else ''}{user_instagram}"
+        else:
+            caption += f" {user_details.name}"
+
+        if comment and len(comment) > 0:
+            # max length of instagram caption is 2200
+            caption += f"\n\nArtist Comment: \"{truncate_with_ellipsis(comment, 2000)}\""
+
+    if platform == SocialMedia.TIKTOK:
+        if user_details.tiktok is not None:
+            user_tiktok = user_details.tiktok
+            if user_tiktok.startswith('http'):
+                caption += f" {user_tiktok}"
+            else:
+                caption += f" {'@' if user_tiktok[0] != '@' else ''}{user_tiktok}"
+        else:
+            caption += f" {user_details.name}"
+
+        if comment and len(comment) > 0:
+            # max length of tiktok caption is 2200 (not sure)
+            caption += f"\n\nArtist Comment: \"{truncate_with_ellipsis(comment, 2000)}\""
+
+    if platform == SocialMedia.YOUTUBE:
+        if user_details.youtube is not None:
+            user_youtube = user_details.youtube
+            if user_youtube.startswith('http'):
+                caption += f" {user_youtube}"
+            else:
+                caption += f" {'@' if user_youtube[0] != '@' else ''}{user_youtube}"
+        else:
+            caption += f" {user_details.name}"
+
+        if comment and len(comment) > 0:
+            # max length of youtube description is 5000
+            caption += f"\n\nArtist Comment: \"{truncate_with_ellipsis(comment, 4800)}\""
 
     if user_details.website is not None:
         caption += f"\n\nYou can find their website here: {user_details.website}"
