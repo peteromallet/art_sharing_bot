@@ -119,7 +119,7 @@ async def execute_at_9_pm_utc():
                                   comment=comment)
                 user_details.posts.append(post)
 
-                await db_session.commit()
+                # await db_session.commit()
                 await db_session.close()
 
                 # create social media post object
@@ -177,7 +177,7 @@ async def execute_at_9_pm_utc():
             # post videos to buffer via zapier
             try:
                 if file_extension != '.gif':
-                    await post_to_buffer(social_media_post=social_media_post)
+                    post_to_buffer(social_media_post=social_media_post)
                     await handle_report_log_interaction(bot=bot, message=f"Posted {social_media_post.post_jump_url} to tiktok/youtube/instagram (hopefully)")
             except Exception:
                 await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc())

@@ -43,4 +43,4 @@ async def post_to_twitter(social_media_post: SocialMediaPost) -> None:
 
     # Create a tweet with the media using v2 API in a separate thread
     await loop.run_in_executor(
-        None, lambda: client.create_tweet(text=social_media_post.caption, media_ids=[media_id]))
+        None, lambda: client.create_tweet(text=social_media_post.caption_twitter, media_ids=[media_id]))
