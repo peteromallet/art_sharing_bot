@@ -135,7 +135,7 @@ async def execute_at_9_pm_utc():
 
                 social_media_post = SocialMediaPost(
                     post_id=top_message.message.id, attachment_url=top_message.message.attachments[0].url, caption_twitter=twitter_caption, video_caption_instagram=instagram_video_caption, video_caption_tiktok=tiktok_video_caption, video_description_youtube=youtube_video_caption, video_title_youtube=youtube_video_title, attachment_name=top_message.message.attachments[0].filename, post_jump_url=top_message.message.jump_url, local_path=os.path.join(
-                        'temp', social_media_post.attachment_name))
+                        'temp', top_message.message.attachments[0].filename))
                 social_media_posts.append(social_media_post)
 
             # break  # TODO: remove
