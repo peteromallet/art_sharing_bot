@@ -55,7 +55,7 @@ class UpdateDetailsModal(discord.ui.Modal, title='Update personal details'):
 
         myView = ViewUpdateDetailsView(
             user_details=new_user_details, bot=self.bot)
-        await interaction.response.edit_message(content=format_msg(new_user_details), view=myView, delete_after=60)
+        await interaction.response.edit_message(content=format_msg(new_user_details), view=myView, delete_after=300)
         await handle_report_log_interaction(bot=self.bot, message=f"{interaction.user.global_name} updated personal details")
 
 
@@ -89,7 +89,7 @@ class ViewUpdateDetailsView(discord.ui.View):
 
         myView = ViewUpdateDetailsView(
             user_details=self.user_details, bot=self.bot)
-        await interaction.response.edit_message(content=format_msg(self.user_details), view=myView, delete_after=60)
+        await interaction.response.edit_message(content=format_msg(self.user_details), view=myView, delete_after=300)
         await handle_report_log_interaction(bot=self.bot, message=f"{interaction.user.global_name} updated notification to {self.user_details.dm_notifications}")
 
     @discord.ui.button(emoji="✨")
@@ -102,7 +102,7 @@ class ViewUpdateDetailsView(discord.ui.View):
 
         myView = ViewUpdateDetailsView(
             user_details=self.user_details, bot=self.bot)
-        await interaction.response.edit_message(content=format_msg(self.user_details), view=myView, delete_after=60)
+        await interaction.response.edit_message(content=format_msg(self.user_details), view=myView, delete_after=300)
         await handle_report_log_interaction(bot=self.bot, message=f"{interaction.user.global_name} updated featuring to {self.user_details.featured}")
 
 
@@ -116,4 +116,4 @@ async def handle_view_update_details_interaction(bot: commands.Bot, interaction:
                             name=interaction.user.global_name, featured=True, dm_notifications=True)
 
     myView = ViewUpdateDetailsView(user_details=user_details, bot=bot)
-    await interaction.response.send_message(format_msg(user_details), view=myView, ephemeral=True, delete_after=60)
+    await interaction.response.send_message(format_msg(user_details), view=myView, ephemeral=True, delete_after=300)
