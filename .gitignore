@@ -7,3 +7,4 @@ temp
 *.pyc
 .env.production
 tests
+venv
