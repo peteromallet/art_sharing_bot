@@ -45,7 +45,7 @@ async def execute_at_8_pm_utc():
 
     # TODO: post top posts to discord
     await handle_display_top_posts_interaction(bot=bot, top_messages=top_6_messages)
-    await handle_report_log_interaction(bot=bot, message=f"{len(top_6_messages)} posts were posted to art_sharing (Top 6, minimum {MIN_REACTION_COUNT_TO_DISPLAY_IN_ART_UPDATES} reactions)")
+    await handle_report_log_interaction(bot=bot, message=f"{len(top_6_messages)} posts were posted to art_updates (Top 6, minimum {MIN_REACTION_COUNT_TO_DISPLAY_IN_ART_UPDATES} reactions)")
 
     db_session = get_db_session()
 
