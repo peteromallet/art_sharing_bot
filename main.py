@@ -78,7 +78,7 @@ async def execute_at_8_pm_utc():
     await db_session.close()
 
 
-# @tasks.loop(time=datetime.now(timezone.utc).replace(hour=19, minute=0, second=0, microsecond=0).time())
+@tasks.loop(time=datetime.now(timezone.utc).replace(hour=19, minute=0, second=0, microsecond=0).time())
 # @tasks.loop(time=datetime.now(timezone.utc).replace(hour=21, minute=0, second=0, microsecond=0).time())
 async def execute_at_9_pm_utc():
 
@@ -204,10 +204,8 @@ async def on_ready():
         else:
             await init_db()
 
-        # execute_at_8_pm_utc.start()
-        # execute_at_9_pm_utc.start()
-
-        await execute_at_9_pm_utc()
+        execute_at_8_pm_utc.start()
+        execute_at_9_pm_utc.start()
 
     except Exception:
         await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc())

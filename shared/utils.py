@@ -10,7 +10,7 @@ import subprocess
 async def get_channel_messages_past_24_hours(channel: discord.TextChannel) -> list[discord.Message]:
     current_datetime_utc = datetime.now(timezone.utc)
     last_21pm_utc = (current_datetime_utc - timedelta(hours=24)
-                     ).replace(hour=21, minute=0, second=0, microsecond=0)
+                     ).replace(hour=19, minute=0, second=0, microsecond=0)  # TODO: set this to 9pm utc later
     messages = [message async for message in channel.history(after=last_21pm_utc, limit=None)]
     return messages
 
