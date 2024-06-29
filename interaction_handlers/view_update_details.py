@@ -116,4 +116,4 @@ async def handle_view_update_details_interaction(bot: commands.Bot, interaction:
                             name=interaction.user.global_name, featured=True, dm_notifications=True)
 
     myView = ViewUpdateDetailsView(user_details=user_details, bot=bot)
-    await interaction.response.send_message(format_msg(user_details), view=myView, ephemeral=True, delete_after=300)
+    await interaction.response.send_message(format_msg(user_details), view=myView, ephemeral=True, delete_after=300, suppress_embeds=True)

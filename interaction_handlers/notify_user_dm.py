@@ -182,4 +182,4 @@ async def handle_notify_user_interaction(bot: commands.Bot, message: discord.Mes
     # await user.send(format_msg(dataSharer), view=myView, delete_after=3600)
 
     # delete after 1 hour
-    await message.author.send(format_msg(dataSharer), view=myView, delete_after=3600)
+    await message.author.send(format_msg(dataSharer), view=myView, delete_after=3600, suppress_embeds=True)
