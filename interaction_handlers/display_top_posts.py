@@ -26,8 +26,9 @@ async def handle_display_top_posts_interaction(bot: commands.Bot, top_messages: 
         return
 
     art_sharing_channel = bot.get_channel(ART_SHARING_CHANNEL)
-    # project_art_sharing_channel = bot.get_channel(PROJECT_ART_SHARING_CHANNEL)
     art_updates_channel = bot.get_channel(ART_UPDATES_CHANNEL)
+    # art_updates_channel = bot.get_channel(
+    # PROJECT_ART_SHARING_CHANNEL)  # TODO: remove
 
     # post updates to project_art_sharing_channel
     title_message = f"# Here are the top {len(top_messages)} most reacted posts from {art_sharing_channel.jump_url} for today."
@@ -36,7 +37,7 @@ async def handle_display_top_posts_interaction(bot: commands.Bot, top_messages: 
     for idx in range(1, len(top_messages)+1):
         top_message = top_messages[idx-1]
 
-        msg_1 = f"## {idx}) By {top_message.message.author.mention} ({top_message.unique_reactions_count} reactions):"
+        msg_1 = f"## By {top_message.message.author.mention}"
         msg_1 = "‎\n" + msg_1 if idx > 1 else msg_1
         await art_updates_channel.send(content=msg_1)
 
