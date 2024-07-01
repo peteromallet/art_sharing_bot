@@ -14,7 +14,7 @@ ACCESS_TOKEN_SECRET = os.getenv("TWITTER_ACCESS_TOKEN_SECRET")
 # https://github.com/peteromallet/art_sharing_bot/blob/main/bot.py
 
 
-async def post_to_twitter(social_media_post: SocialMediaPost) -> None:
+async def post_to_twitter(social_media_post: SocialMediaPost) -> str:
     file_extension = os.path.splitext(social_media_post.attachment_name)[1]
 
     # Initialize Tweepy for v1.1 API
@@ -42,5 +42,7 @@ async def post_to_twitter(social_media_post: SocialMediaPost) -> None:
                            access_token_secret=ACCESS_TOKEN_SECRET)
 
     # Create a tweet with the media using v2 API in a separate thread
-    await loop.run_in_executor(
+    tweet = await loop.run_in_executor(
         None, lambda: client.create_tweet(text=social_media_post.caption_twitter, media_ids=[media_id]))
+
+    return f"https://x.com/banodoco/status/{tweet.data['id']}"
