@@ -9,10 +9,6 @@ from .logging import handle_report_log_interaction
 
 def format_msg(user_details: User) -> str:
     msg = f"## Your current details are as follows:\n\n{convert_user_to_markdown(user_details)}\n\n_Please click the buttons below if you'd like to update your details,"
-    if user_details.dm_notifications:
-        msg += " disable notifications"
-    else:
-        msg += " enable notifications"
     if user_details.featured:
         msg += " or not be featured_"
     else:
@@ -64,33 +60,15 @@ class ViewUpdateDetailsView(discord.ui.View):
         super().__init__()
         self.timeout = None
         self.user_details = user_details
-        self.children[2].label = "Stop being featured" if self.user_details.featured else "Allow to be featured"
-        self.children[2].style = discord.ButtonStyle.red if self.user_details.featured else discord.ButtonStyle.green
-        self.children[1].label = "Disable notifications" if self.user_details.dm_notifications else "Enable notifications"
-        self.children[1].style = discord.ButtonStyle.secondary if self.user_details.dm_notifications else discord.ButtonStyle.green
+        self.children[1].label = "Stop being featured" if self.user_details.featured else "Allow to be featured"
+        self.children[1].style = discord.ButtonStyle.red if self.user_details.featured else discord.ButtonStyle.green
         self.bot = bot
-
-        if not self.user_details.featured:  # hide notification button if not featured
-            self.remove_item(self.children[1])
 
     @discord.ui.button(label="Edit Details", style=discord.ButtonStyle.blurple, emoji="📝")
     async def open_details_modal(self, interaction: discord.Interaction, _):
         updateDetailsModal = UpdateDetailsModal(
             user_details=self.user_details, bot=self.bot)
         await interaction.response.send_modal(updateDetailsModal)
-
-    @discord.ui.button(emoji="🔔")
-    async def edit_notification(self, interaction: discord.Interaction, _):
-        new_user = User(id=self.user_details.id, name=interaction.user.global_name, twitter=self.user_details.twitter,
-                        instagram=self.user_details.instagram, youtube=self.user_details.youtube, tiktok=self.user_details.tiktok, website=self.user_details.website, featured=self.user_details.featured, dm_notifications=not self.user_details.dm_notifications)  # toggle notification
-
-        # update database with new details
-        self.user_details = await handle_update_details(new_user=new_user)
-
-        myView = ViewUpdateDetailsView(
-            user_details=self.user_details, bot=self.bot)
-        await interaction.response.edit_message(content=format_msg(self.user_details), view=myView, delete_after=300)
-        await handle_report_log_interaction(bot=self.bot, message=f"{interaction.user.global_name} updated notification to {self.user_details.dm_notifications}")
 
     @discord.ui.button(emoji="✨")
     async def edit_featuring(self, interaction: discord.Interaction, _):
