@@ -145,32 +145,31 @@ async def execute_at_9_pm_utc():
             # post to twitter
             try:
                 tweet_url = await post_to_twitter(social_media_post)
-                await handle_report_log_interaction(bot=bot, message=f"_➜ Posted {social_media_post.post_jump_url} to Twitter: <{tweet_url}>_")
+                await handle_report_log_interaction(bot=bot, message=f"Posted {social_media_post.post_jump_url} to Twitter: <{tweet_url}>")
             except Exception:
                 await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc(), post_jump_url=social_media_post.post_jump_url)
 
-            # post to youtube
-            try:
-                if file_extension != '.gif':
+            if file_extension != '.gif':
+                # post to youtube
+                try:
                     # zapier will report back to discord
-                    await post_to_youtube(social_media_post)
-            except Exception:
-                await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc(), post_jump_url=social_media_post.post_jump_url)
+                    post_to_youtube(social_media_post)
+                except Exception:
+                    await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc(), post_jump_url=social_media_post.post_jump_url)
 
-            # post to instagram reels
-            try:
-                if file_extension != '.gif':
+                # post to instagram reels
+                try:
                     # zapier will report back to discord
-                    await post_to_instagram(social_media_post)
-            except Exception:
-                await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc(), post_jump_url=social_media_post.post_jump_url)
+                    post_to_instagram(social_media_post)
+                except Exception:
+                    await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc(), post_jump_url=social_media_post.post_jump_url)
 
-            # post videos to tiktok via buffer
-            try:
-                await post_to_tiktok_via_buffer(social_media_post)
-                await handle_report_log_interaction(bot=bot, message=f"_➜ Posted {social_media_post.post_jump_url} to tiktok (hopefully)_")
-            except Exception:
-                await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc(), post_jump_url=social_media_post.post_jump_url)
+                # post videos to tiktok via buffer
+                try:
+                    post_to_tiktok_via_buffer(social_media_post)
+                    await handle_report_log_interaction(bot=bot, message=f"Posted {social_media_post.post_jump_url} to tiktok (hopefully)")
+                except Exception:
+                    await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc(), post_jump_url=social_media_post.post_jump_url)
 
             # delete local file
             os.remove(social_media_post.local_path)
