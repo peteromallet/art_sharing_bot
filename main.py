@@ -41,37 +41,39 @@ bot = commands.Bot(command_prefix='/', intents=intents)
 @tasks.loop(time=datetime.now(timezone.utc).replace(hour=18, minute=0, second=0, microsecond=0).time())
 # @tasks.loop(time=datetime.now(timezone.utc).replace(hour=20, minute=0, second=0, microsecond=0).time())
 async def execute_at_8_pm_utc():
-    top_6_messages: list[MessageWithReactionCount] = await handle_get_top_valid_messages_with_attachments_and_reactions(bot=bot, top_n=6, min_reaction_count=MIN_REACTION_COUNT_TO_DISPLAY_IN_ART_UPDATES)
+    top_6_messages: list[MessageWithReactionCount] = await handle_get_top_valid_messages_with_attachments_and_reactions(bot=bot, top_n=1, min_reaction_count=MIN_REACTION_COUNT_TO_DISPLAY_IN_ART_UPDATES)
+    # top_6_messages: list[MessageWithReactionCount] = await handle_get_top_valid_messages_with_attachments_and_reactions(bot=bot, top_n=6, min_reaction_count=MIN_REACTION_COUNT_TO_DISPLAY_IN_ART_UPDATES)
 
-    # TODO: post top posts to discord
-    await handle_display_top_posts_interaction(bot=bot, top_messages=top_6_messages)
-    await handle_report_log_interaction(bot=bot, message=f"{len(top_6_messages)} posts were posted to art_updates (Top 6, minimum {MIN_REACTION_COUNT_TO_DISPLAY_IN_ART_UPDATES} reactions)")
+    await handle_report_log_interaction(bot=bot, message=f"{len(top_6_messages)} posts may be POTENTIALLY posted to #art_updates + ig/twitter/yt/tiktok (Top 6, minimum {MIN_REACTION_COUNT_TO_DISPLAY_IN_ART_UPDATES} reactions)")
 
     db_session = get_db_session()
 
     for top_message in top_6_messages:
         try:
-            user_id = top_message.message.author.id
-            # user_id = 688343645644259328  # TODO: don't hardcode
+            # user_id = top_message.message.author.id
+            user_id = 688343645644259328  # TODO: don't hardcode
+
             user_details: User = await db_session.get(User, user_id)
 
-            if not user_details:
-                # user hasn't updated their details, so we add it to the database
-                new_user = User(id=user_id,
-                                name=top_message.message.author.global_name, featured=True, dm_notifications=True)
-                user_details = await handle_update_details(new_user=new_user)
-
-            # check if user wants to be featured
-            if user_details.featured:
-                if user_details.dm_notifications:
-                    # set name to current discord name because users can't edit name afterwards due to missing space in modal
-                    user_details.name = top_message.message.author.global_name
+            if user_details:
+                # user was added to database by the bot (check 2 -> USER didn't update details)
+                if user_details.created_at == user_details.updated_at:
                     await handle_notify_user_interaction(bot=bot, message=top_message.message, user_details=user_details)
-                    await handle_report_log_interaction(bot=bot, message=f"{user_details.name} received DM for {top_message.message.jump_url}")
+                    await handle_report_log_interaction(bot=bot, message=f"{user_details.name} received DM for {top_message.message.jump_url} (Existing User, Not updated personal details)")
                 else:
-                    await handle_report_log_interaction(bot=bot, message=f"{user_details.name} did not receive DM for {top_message.message.jump_url} (Notifications disabled)")
+                    await handle_report_log_interaction(bot=bot, message=f"{user_details.name} did not receive DM for {top_message.message.jump_url} (Existing User, already updated personal details)")
 
-            # break  # TODO: remove
+            # user hasn't updated their details, so we add it to the database (check 1 -> NEW USER)
+            else:
+                new_user = User(id=user_id,
+                                # TODO: don't hardcode
+                                name="yuvraj hardcoded", featured=True, dm_notifications=True)
+                # name=top_message.message.author.global_name, featured=True, dm_notifications=True)
+                user_details = await handle_update_details(new_user=new_user)
+                await handle_notify_user_interaction(bot=bot, message=top_message.message, user_details=user_details)
+                await handle_report_log_interaction(bot=bot, message=f"{user_details.name} received DM for {top_message.message.jump_url} (New User)")
+
+            break  # TODO: remove
         except Exception:
             await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc())
 
@@ -204,9 +206,9 @@ async def on_ready():
         else:
             await init_db()
 
-        execute_at_8_pm_utc.start()
-        execute_at_9_pm_utc.start()
-
+        # execute_at_8_pm_utc.start()
+        # execute_at_9_pm_utc.start()
+        await execute_at_8_pm_utc()
     except Exception:
         await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc())
 

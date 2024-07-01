@@ -178,8 +178,8 @@ async def handle_notify_user_interaction(bot: commands.Bot, message: discord.Mes
                             jump_url=message.jump_url, user_details=user_details, bot=bot)
     myView = MyView(dataSharer)
 
-    # user = await bot.fetch_user(user_details.id)  # TODO: use author.send
-    # await user.send(format_msg(dataSharer), view=myView, delete_after=3600)
+    user = await bot.fetch_user(user_details.id)  # TODO: use author.send
+    await user.send(format_msg(dataSharer), view=myView, delete_after=3600)
 
     # delete after 1 hour
-    await message.author.send(format_msg(dataSharer), view=myView, delete_after=3600, suppress_embeds=True)
+    # await message.author.send(format_msg(dataSharer), view=myView, delete_after=3600, suppress_embeds=True)
