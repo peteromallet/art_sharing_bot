@@ -133,7 +133,7 @@ async def execute_at_9_pm_utc():
         except Exception:
             await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc(), post_jump_url=social_media_post.post_jump_url)
 
-    # TODO: schedule posts to social media, every 15 minutes
+    # schedule posts to social media, every 15 minutes
     for social_media_post in social_media_posts:
         try:
             # download the attachment
