@@ -110,7 +110,7 @@ def create_post_caption(user_details: User, comment: str, platform: SocialMedia)
 
         if comment and len(comment) > 0:
             # max length of twitter caption is 280, must accommodate for 3 lines of text
-            caption += f"\n\nArtist Comment: \"{truncate_with_ellipsis(comment, 200)}\""
+            caption += f"\n\nArtist Comment: \"{truncate_with_ellipsis(comment, 165)}\""
 
     if platform == SocialMedia.INSTAGRAM:
         if user_details.instagram is not None:
