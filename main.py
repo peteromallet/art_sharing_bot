@@ -46,6 +46,7 @@ async def execute_at_8_pm_utc():
 
     db_session = get_db_session()
 
+    messaged_users = []
     for top_message in top_6_messages:
         try:
             user_id = top_message.message.author.id
@@ -56,8 +57,10 @@ async def execute_at_8_pm_utc():
             if user_details:
                 # user was added to database by the bot (check 2 -> USER didn't update details)
                 if user_details.created_at == user_details.updated_at:
-                    await handle_notify_user_interaction(bot=bot, message=top_message.message, user_details=user_details)
-                    await handle_report_log_interaction(bot=bot, message=f"{user_details.name} received DM for {top_message.message.jump_url} (Existing User, Not updated personal details)")
+                    if user_id not in messaged_users:
+                        await handle_notify_user_interaction(bot=bot, message=top_message.message, user_details=user_details)
+                        await handle_report_log_interaction(bot=bot, message=f"{user_details.name} received DM for {top_message.message.jump_url} (Existing User, Not updated personal details)")
+                        messaged_users.append(user_id)
                 else:
                     await handle_report_log_interaction(bot=bot, message=f"{user_details.name} did not receive DM for {top_message.message.jump_url} (Existing User, already updated personal details)")
 
@@ -70,6 +73,7 @@ async def execute_at_8_pm_utc():
                 user_details = await handle_update_details(new_user=new_user)
                 await handle_notify_user_interaction(bot=bot, message=top_message.message, user_details=user_details)
                 await handle_report_log_interaction(bot=bot, message=f"{user_details.name} received DM for {top_message.message.jump_url} (New User)")
+                messaged_users.append(user_id)
 
             # break  # TODO: remove
         except Exception:
