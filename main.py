@@ -13,7 +13,7 @@ from interaction_handlers.logging import handle_report_errors_interaction, handl
 
 from shared.models import MessageWithReactionCount, SocialMediaPost, SocialMedia
 from shared.insert_or_update_user import handle_update_details
-from shared.utils import create_post_caption, download_file
+from shared.utils import create_post_caption, download_file, replace_channel_mentions_with_names
 
 from services.database import get_db_session, init_db
 from services.post_to_twitter import post_to_twitter
@@ -108,6 +108,8 @@ async def execute_at_9_pm_utc():
             # check if user wants to be featured
             elif user_details.featured:
                 comment = top_message.message.content or ""
+                comment = replace_channel_mentions_with_names(
+                    top_message.message)
 
                 # save to database
                 post: Post = Post(id=top_message.message.id, reaction_count=top_message.unique_reactions_count,
@@ -204,7 +206,7 @@ async def on_ready():
         await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc(), post_jump_url="")
 
 
-@bot.tree.command(name="art_sharing_details", description="View and update your art sharing details")
+@ bot.tree.command(name="art_sharing_details", description="View and update your art sharing details")
 async def view_update_details(interaction: discord.Interaction):
     try:
         await handle_view_update_details_interaction(bot=bot, interaction=interaction)

@@ -36,6 +36,20 @@ def replace_user_mentions_with_usernames(message: discord.Message) -> str:
     return msg
 
 
+def replace_channel_mentions_with_names(message: discord.Message) -> str:
+    msg_content = message.content
+    channel_mentions_str = re.findall(r'<#[0-9]+>', msg_content)
+    channel_mentions = message.channel_mentions
+
+    for channel_mention in channel_mentions_str:
+        id = channel_mention.replace(
+            '<', '').replace('>', '').replace('#', '')
+        channel = [x for x in channel_mentions if x.id == int(id)][0]
+        msg_content = msg_content.replace(channel_mention, channel.name)
+
+    return msg_content
+
+
 def ensure_blockquote_in_all_lines(text: str) -> str:
     if text == '':
         return text
