@@ -5,6 +5,7 @@ from shared.models import MessageWithReactionCount, SocialMedia
 from schemas.user import User
 import aiohttp
 import subprocess
+import base64
 
 
 async def get_channel_messages_past_24_hours(channel: discord.TextChannel) -> list[discord.Message]:
@@ -177,3 +178,9 @@ def create_post_caption(user_details: User, comment: str, platform: SocialMedia)
 def convert_gif_to_mp4(gif_local_path: str, mp4_save_path: str) -> None:
     subprocess.run(
         f"ffmpeg -loglevel error -y -i {gif_local_path} -c:v libx264 -preset slow -crf 18 {mp4_save_path}", shell=True)
+
+
+def image_to_base64(image_path):
+    with open(image_path, 'rb') as image_file:
+        encoded_string = base64.b64encode(image_file.read()).decode()
+    return encoded_string

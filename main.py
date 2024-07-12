@@ -18,6 +18,7 @@ from shared.utils import create_post_caption, download_file, replace_channel_men
 from services.database import get_db_session, init_db
 from services.post_to_twitter import post_to_twitter
 from services.zapier import post_to_instagram, post_to_tiktok_via_buffer, post_to_youtube
+from services.youtube_title_generator import create_youtube_title_using_claude
 
 from schemas.user import User
 from schemas.post import Post
@@ -128,11 +129,13 @@ async def execute_at_9_pm_utc():
                     comment=comment, platform=SocialMedia.TIKTOK, user_details=user_details)
                 youtube_video_caption = create_post_caption(
                     comment=comment, platform=SocialMedia.YOUTUBE, user_details=user_details)
-                youtube_video_title = f"Featured piece by {user_details.youtube or user_details.name}"
+
+                # will be changed later by claude ai
+                youtube_video_title = f"Featured piece by {user_details.name}"
 
                 social_media_post = SocialMediaPost(
                     post_id=top_message.message.id, attachment_url=top_message.message.attachments[0].url, caption_twitter=twitter_caption, video_caption_instagram=instagram_video_caption, video_caption_tiktok=tiktok_video_caption, video_description_youtube=youtube_video_caption, video_title_youtube=youtube_video_title, attachment_name=top_message.message.attachments[0].filename, post_jump_url=top_message.message.jump_url, local_path=os.path.join(
-                        'temp', top_message.message.attachments[0].filename))
+                        'temp', top_message.message.attachments[0].filename), original_comment=comment, user_details=user_details)
                 social_media_posts.append(social_media_post)
 
             # break  # TODO: remove
@@ -158,6 +161,15 @@ async def execute_at_9_pm_utc():
             if file_extension != '.gif':
                 # post to youtube
                 try:
+                    # create title using claude ai
+                    try:
+                        ai_video_title = create_youtube_title_using_claude(
+                            social_media_post)
+                        social_media_post.video_title_youtube = f"\"{ai_video_title}\" by {social_media_post.user_details.name}"
+                    except Exception:
+                        # use default title
+                        await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc(), post_jump_url=social_media_post.post_jump_url)
+
                     # zapier will report back to discord
                     post_to_youtube(social_media_post)
                 except Exception:

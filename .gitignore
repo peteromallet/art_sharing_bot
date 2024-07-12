@@ -8,3 +8,4 @@ temp
 .env.production
 tests
 venv
+test.py

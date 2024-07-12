@@ -5,4 +5,5 @@ sqlalchemy
 aiosqlite
 aiohttp
 tweepy
-huggingface_hub
+opencv-python
+anthropic
