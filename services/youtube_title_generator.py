@@ -84,7 +84,7 @@ def extract_evenly_distributed_frames(video_path, num_frames, img_prefix, save_d
 
 
 def create_youtube_title_using_claude(social_media_post: SocialMediaPost) -> str:
-    frames_dir = os.path.join("temp", social_media_post.post_id)
+    frames_dir = os.path.join("temp", str(social_media_post.post_id))
 
     # claude can use 20 images max
     extract_evenly_distributed_frames(
