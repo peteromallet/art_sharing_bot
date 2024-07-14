@@ -23,7 +23,7 @@ from services.youtube_title_generator import create_youtube_title_using_claude
 from schemas.user import User
 from schemas.post import Post
 
-from constants import GUILD_ID, MIN_REACTION_COUNT_TO_DISPLAY_IN_ART_UPDATES, MIN_REACTION_COUNT_TO_DISPLAY_IN_SOCIAL_MEDIA
+from constants import GUILD_ID, MIN_REACTION_COUNT_TO_DISPLAY_IN_SOCIAL_MEDIA
 
 load_dotenv()
 
@@ -41,14 +41,14 @@ bot = commands.Bot(command_prefix='/', intents=intents)
 
 @tasks.loop(time=datetime.now(timezone.utc).replace(hour=18, minute=0, second=0, microsecond=0).time())
 async def execute_at_8_pm_utc():
-    top_6_messages: list[MessageWithReactionCount] = await handle_get_top_valid_messages_with_attachments_and_reactions(bot=bot, top_n=6, min_reaction_count=MIN_REACTION_COUNT_TO_DISPLAY_IN_ART_UPDATES)
+    top_4_messages: list[MessageWithReactionCount] = await handle_get_top_valid_messages_with_attachments_and_reactions(bot=bot, top_n=4, min_reaction_count=MIN_REACTION_COUNT_TO_DISPLAY_IN_SOCIAL_MEDIA)
 
-    await handle_report_log_interaction(bot=bot, message=f"{len(top_6_messages)} posts may be POTENTIALLY posted to #art_updates + ig/twitter/yt/tiktok (Top 6, minimum {MIN_REACTION_COUNT_TO_DISPLAY_IN_ART_UPDATES} reactions)")
+    await handle_report_log_interaction(bot=bot, message=f"{len(top_4_messages)} posts will be SURELY posted to #art_updates + ig/twitter/yt/tiktok (Top 4, minimum {MIN_REACTION_COUNT_TO_DISPLAY_IN_SOCIAL_MEDIA} reactions)")
 
     db_session = get_db_session()
 
     messaged_users = []
-    for top_message in top_6_messages:
+    for top_message in top_4_messages:
         try:
             user_id = top_message.message.author.id
             # user_id = 688343645644259328  # TODO: don't hardcode
