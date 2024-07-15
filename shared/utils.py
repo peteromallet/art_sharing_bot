@@ -96,11 +96,11 @@ def convert_user_to_markdown(user: User) -> str:
     return f"**Name:** {user.name}\n**Youtube handle:** {user.youtube or ''}\n**Twitter handle:** {user.twitter or ''}\n**Instagram handle:** {user.instagram or ''}\n**Tiktok handle:** {user.tiktok or ''}\n**Website:** {user.website or ''}\n**Okay To Feature:** {user.featured}"
 
 
-async def download_file(url, filename):
+async def download_file(url, save_path):
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as resp:
             if resp.status == 200:
-                with open(filename, 'wb') as f:
+                with open(save_path, 'wb') as f:
                     f.write(await resp.read())
 
 
@@ -111,8 +111,8 @@ def truncate_with_ellipsis(text, max_length):
         return text[:max_length-3] + "..."
 
 
-def create_post_caption(user_details: User, comment: str, platform: SocialMedia) -> str:
-    caption = "Featured piece by"
+def create_post_caption(user_details: User, comment: str, platform: SocialMedia, ai_title: str) -> str:
+    caption = f"\"{ai_title}\" by"
     if platform == SocialMedia.TWITTER:
         if user_details.twitter is not None:
             user_twitter = user_details.twitter

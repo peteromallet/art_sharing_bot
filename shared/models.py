@@ -1,7 +1,6 @@
 import discord
 from dataclasses import dataclass
 from enum import Enum
-from schemas.user import User
 
 
 @dataclass
@@ -22,8 +21,6 @@ class SocialMediaPost():
     attachment_name: str
     post_jump_url: str
     local_path: str
-    original_comment: str
-    user_details: User
 
 
 class SocialMedia(Enum):

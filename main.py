@@ -97,6 +97,8 @@ async def execute_at_9_pm_utc():
     social_media_posts: list[SocialMediaPost] = []
 
     for top_message in top_4_messages:
+        post_jump_url = top_message.message.jump_url
+
         try:
             # user_id = 688343645644259328  # TODO: don't hardcode
             user_id = top_message.message.author.id
@@ -108,46 +110,57 @@ async def execute_at_9_pm_utc():
 
             # check if user wants to be featured
             elif user_details.featured:
+                post_id = top_message.message.id
                 comment = top_message.message.content or ""
                 comment = replace_channel_mentions_with_names(
                     top_message.message)
 
                 # save to database
-                post: Post = Post(id=top_message.message.id, reaction_count=top_message.unique_reactions_count,
+                post: Post = Post(id=post_id, reaction_count=top_message.unique_reactions_count,
                                   comment=comment)
                 user_details.posts.append(post)
 
                 await db_session.commit()  # TODO: uncomment
                 await db_session.close()
 
+                # download the attachment
+                attachment_name = top_message.message.attachments[0].filename
+                attachment_url = top_message.message.attachments[0].url
+                file_local_path = os.path.join('temp', attachment_name)
+                await download_file(url=attachment_url,  save_path=file_local_path)
+
+                try:
+                    ai_video_title = create_youtube_title_using_claude(
+                        file_local_path=file_local_path, original_comment=comment, post_id=post_id)
+                except Exception:
+                    # use default title
+                    ai_video_title = "Featured piece by"
+                    await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc(), post_jump_url=post_jump_url)
+
                 # create social media post object
                 twitter_caption = create_post_caption(
-                    comment=comment, platform=SocialMedia.TWITTER, user_details=user_details)
+                    comment=comment, platform=SocialMedia.TWITTER, user_details=user_details, ai_title=ai_video_title)
                 instagram_video_caption = create_post_caption(
-                    comment=comment, platform=SocialMedia.INSTAGRAM, user_details=user_details)
+                    comment=comment, platform=SocialMedia.INSTAGRAM, user_details=user_details, ai_title=ai_video_title)
                 tiktok_video_caption = create_post_caption(
-                    comment=comment, platform=SocialMedia.TIKTOK, user_details=user_details)
+                    comment=comment, platform=SocialMedia.TIKTOK, user_details=user_details, ai_title=ai_video_title)
                 youtube_video_caption = create_post_caption(
-                    comment=comment, platform=SocialMedia.YOUTUBE, user_details=user_details)
+                    comment=comment, platform=SocialMedia.YOUTUBE, user_details=user_details, ai_title=ai_video_title)
 
-                # will be changed later by claude ai
-                youtube_video_title = f"Featured piece by {user_details.name}"
+                # use name instead of handle
+                youtube_video_title = f"\"{ai_video_title}\" by {user_details.name}"
 
                 social_media_post = SocialMediaPost(
-                    post_id=top_message.message.id, attachment_url=top_message.message.attachments[0].url, caption_twitter=twitter_caption, video_caption_instagram=instagram_video_caption, video_caption_tiktok=tiktok_video_caption, video_description_youtube=youtube_video_caption, video_title_youtube=youtube_video_title, attachment_name=top_message.message.attachments[0].filename, post_jump_url=top_message.message.jump_url, local_path=os.path.join(
-                        'temp', top_message.message.attachments[0].filename), original_comment=comment, user_details=user_details)
+                    post_id=post_id, attachment_url=attachment_url, caption_twitter=twitter_caption, video_caption_instagram=instagram_video_caption, video_caption_tiktok=tiktok_video_caption, video_description_youtube=youtube_video_caption, video_title_youtube=youtube_video_title, attachment_name=attachment_name, post_jump_url=post_jump_url, local_path=file_local_path)
                 social_media_posts.append(social_media_post)
 
             # break  # TODO: remove
         except Exception:
-            await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc(), post_jump_url=social_media_post.post_jump_url)
+            await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc(), post_jump_url=post_jump_url)
 
     # schedule posts to social media, every 15 minutes
     for social_media_post in social_media_posts:
         try:
-            # download the attachment
-            await download_file(social_media_post.attachment_url, social_media_post.local_path)
-
             file_extension = os.path.splitext(
                 social_media_post.attachment_name)[1]
 
@@ -161,15 +174,6 @@ async def execute_at_9_pm_utc():
             if file_extension != '.gif':
                 # post to youtube
                 try:
-                    # create title using claude ai
-                    try:
-                        ai_video_title = create_youtube_title_using_claude(
-                            social_media_post)
-                        social_media_post.video_title_youtube = f"\"{ai_video_title}\" by {social_media_post.user_details.name}"
-                    except Exception:
-                        # use default title
-                        await handle_report_errors_interaction(bot=bot, traceback=traceback.format_exc(), post_jump_url=social_media_post.post_jump_url)
-
                     # zapier will report back to discord
                     post_to_youtube(social_media_post)
                 except Exception:

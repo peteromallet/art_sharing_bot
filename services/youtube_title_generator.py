@@ -9,11 +9,11 @@ import shutil
 load_dotenv()
 
 
-def make_request_claude(frames_dir: str, social_media_post: SocialMediaPost) -> str:
+def make_request_claude(frames_dir: str, original_comment: str) -> str:
     prompt = "Here are some random frames from a video. Your job is to analyse these and create an appropriate title for the video which will be uploaded to youtube. Try to make the title interesting, unique and fairly short - max. 3-4 words. Also, avoid cliches.\n\nOutput ONLY the title, with no additional explanation or text."
 
-    if len(social_media_post.original_comment) > 0:
-        prompt = f"Here are some random frames from a video and a description. Your job is to analyse these and create an appropriate title for the video which will be uploaded to youtube. This is from a community so try not to reference things from the comment that might only be relevant to people in the community. Try to make the title interesting, unique and fairly short - max. 3-4 words. Also, avoid cliches.\n\nArtist's comment: \"{social_media_post.original_comment}\"\n\nIf they have included what looks like a title in the comment, please use this.\n\nOutput ONLY the title, with no additional explanation or text."
+    if len(original_comment) > 0:
+        prompt = f"Here are some random frames from a video and a description. Your job is to analyse these and create an appropriate title for the video which will be uploaded to youtube. This is from a community so try not to reference things from the comment that might only be relevant to people in the community. Try to make the title interesting, unique and fairly short - max. 3-4 words. Also, avoid cliches.\n\nArtist's comment: \"{original_comment}\"\n\nIf they have included what looks like a title in the comment, please use this.\n\nOutput ONLY the title, with no additional explanation or text."
 
     image_paths = [os.path.join(frames_dir, x) for x in os.listdir(frames_dir)]
     content = []
@@ -83,15 +83,15 @@ def extract_evenly_distributed_frames(video_path, num_frames, img_prefix, save_d
     vidcap.release()
 
 
-def create_youtube_title_using_claude(social_media_post: SocialMediaPost) -> str:
-    frames_dir = os.path.join("temp", str(social_media_post.post_id))
+def create_youtube_title_using_claude(post_id: int, file_local_path: str, original_comment: str) -> str:
+    frames_dir = os.path.join("temp", str(post_id))
 
     # claude can use 20 images max
     extract_evenly_distributed_frames(
-        video_path=social_media_post.local_path, num_frames=3, img_prefix=social_media_post.post_id, save_dir=frames_dir)
+        video_path=file_local_path, num_frames=3, img_prefix=post_id, save_dir=frames_dir)
 
     video_title = make_request_claude(
-        frames_dir=frames_dir, social_media_post=social_media_post)
+        frames_dir=frames_dir, original_comment=original_comment)
 
     # delete folder with frames
     shutil.rmtree(frames_dir)
