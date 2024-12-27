@@ -1,0 +1,9 @@
+discord
+python-dotenv
+asyncio
+sqlalchemy
+aiosqlite
+aiohttp
+tweepy
+opencv-python
+anthropic

@@ -1,4 +1,11 @@
 .env
+__pycache__
+admin.py
+temp
+*.db
 .DS_Store
 *.pyc
-__pycache__/
+.env.production
+tests
+venv
+test.py
